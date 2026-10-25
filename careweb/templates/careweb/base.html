@@ -1,0 +1,63 @@
+{% load static careweb_tags %}<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ site.organisation_name|default:"Care Anmore" }} | {{ site.tagline }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Personalised homecare support in {{ site.service_area }}, shaped around your needs, routines and choices. Contact Care Anmore to start a conversation.{% endblock %}">
+  <link rel="canonical" href="{{ request.build_absolute_uri }}">
+  <meta name="theme-color" content="#01424A">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Care Anmore">
+  <meta property="og:title" content="{% block og_title %}Care Anmore | {{ site.tagline }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Personalised homecare support shaped around your needs, routines and choices.{% endblock %}">
+  <meta property="og:url" content="{{ request.build_absolute_uri }}">
+  {% block og_image %}{% endblock %}
+  <link rel="icon" href="{% static 'careweb/img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://images.unsplash.com">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'careweb/css/careweb.css' %}">
+  {% block extra_head %}{% endblock %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": "{{ request.scheme }}://{{ request.get_host }}/#organisation",
+    "name": "{{ site.organisation_name|escapejs }}",
+    "description": "Personalised homecare support",
+    "url": "{{ request.scheme }}://{{ request.get_host }}/",
+    "areaServed": "{{ site.service_area|escapejs }}"{% if site.phone %},
+    "telephone": "{{ site.phone|escapejs }}"{% endif %}{% if site.email %},
+    "email": "{{ site.email|escapejs }}"{% endif %}
+  }
+  </script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  {% include "careweb/partials/icons.html" %}
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  {% include "careweb/partials/header.html" %}
+
+  <main id="main-content" tabindex="-1">
+    {% if messages %}
+      <div class="wrap" style="padding-top:20px">
+        {% for message in messages %}
+          <div class="alert{% if message.tags == 'error' %} alert--error{% endif %}" role="{% if message.tags == 'error' %}alert{% else %}status{% endif %}">
+            {% if message.tags == 'error' %}{% icon "alert" %}{% else %}{% icon "check" %}{% endif %}
+            <p>{{ message }}</p>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include "careweb/partials/footer.html" %}
+
+  <button class="back-to-top" type="button" aria-label="Back to top">{% icon "arrow-up" %}</button>
+  <script src="{% static 'careweb/js/careweb.js' %}" defer></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

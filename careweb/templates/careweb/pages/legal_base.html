@@ -1,0 +1,24 @@
+{% extends "careweb/base.html" %}
+{% load careweb_tags %}
+{% block title %}{{ page_title }} | Care Anmore{% endblock %}
+
+{% block content %}
+{% include "careweb/partials/page_hero.html" with title=page_title %}
+<section class="section">
+  <div class="wrap content-layout">
+    <article class="prose">
+      <div class="inset" style="margin-top:0">
+        <p><strong>Draft for review.</strong> This content is a starting template and must be checked and approved by {{ site.organisation_name }} before the website goes live.</p>
+      </div>
+      {% block legal_content %}{% endblock %}
+      <p style="color:var(--muted);margin-top:40px">Last reviewed: to be confirmed.</p>
+    </article>
+    <aside class="sidebar">
+      <nav class="side-card contents-list" aria-labelledby="contents-title">
+        <h3 id="contents-title">Contents</h3>
+        <ul>{% block contents %}{% endblock %}</ul>
+      </nav>
+    </aside>
+  </div>
+</section>
+{% endblock %}

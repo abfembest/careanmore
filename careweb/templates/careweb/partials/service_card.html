@@ -1,0 +1,12 @@
+{% load careweb_tags %}
+<article class="service-card">
+  <div class="service-card__media">
+    <img src="{{ svc.image_src }}" alt="{{ svc.image_alt }}" width="600" height="375" loading="lazy" decoding="async">
+  </div>
+  <div class="service-card__body">
+    <span class="service-card__icon">{% icon svc.icon %}</span>
+    <h3><a href="{{ svc.get_absolute_url }}">{{ svc.title }}</a></h3>
+    <p>{{ svc.summary }}</p>
+    <span class="text-link" aria-hidden="true">Find out more {% icon "arrow-right" %}</span>
+  </div>
+</article>

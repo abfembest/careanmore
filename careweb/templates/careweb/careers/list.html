@@ -1,0 +1,64 @@
+{% extends "careweb/base.html" %}
+{% load careweb_tags %}
+{% block title %}Careers | Care Anmore{% endblock %}
+{% block meta_description %}Work in homecare with Care Anmore in {{ site.service_area }}. See current opportunities or register your interest.{% endblock %}
+
+{% block content %}
+{% include "careweb/partials/page_hero.html" with title="Careers" label="Join our team" lead="Good care depends on good people. If you are kind, reliable and a great listener, we would like to hear from you." image_src="https://images.unsplash.com/photo-1592834448691-79fed8f0aae5?auto=format&fit=crop&w=800&q=80" image_alt="A carer standing beside an older woman" %}
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>What we look for</h2>
+      <p>Experience is welcome, but the qualities below matter most.</p>
+    </div>
+    <div class="grid grid--4">
+      <div class="feature"><span class="feature__icon">{% icon "heart" %}</span><h3>Kindness</h3><p>You treat people with warmth, patience and respect.</p></div>
+      <div class="feature"><span class="feature__icon">{% icon "clock" %}</span><h3>Reliability</h3><p>People can count on you to be there when agreed.</p></div>
+      <div class="feature"><span class="feature__icon">{% icon "chat" %}</span><h3>Communication</h3><p>You listen well and explain things clearly.</p></div>
+      <div class="feature"><span class="feature__icon">{% icon "shield" %}</span><h3>Integrity</h3><p>You protect people’s dignity, privacy and choices.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--cream" id="vacancies" aria-labelledby="vacancies-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="vacancies-title">Current opportunities</h2>
+    </div>
+    {% for job in vacancies %}
+      <article class="vacancy">
+        <div>
+          <h3><a href="{{ job.get_absolute_url }}">{{ job.title }}</a></h3>
+          <p class="vacancy__meta">
+            <span>{% icon "pin" %}{{ job.location }}</span>
+            <span>{% icon "briefcase" %}{{ job.get_contract_display }}</span>
+            {% if job.salary %}<span>{{ job.salary }}</span>{% endif %}
+            {% if job.closing_date %}<span>{% icon "calendar" %}Closes {{ job.closing_date|date:"j F Y" }}</span>{% endif %}
+          </p>
+          <p>{{ job.summary }}</p>
+        </div>
+        <a class="btn btn--outline" href="{{ job.get_absolute_url }}">View role<span class="visually-hidden">: {{ job.title }}</span></a>
+      </article>
+    {% empty %}
+      <div class="empty-state">
+        {% icon "briefcase" %}
+        <h3>There are no vacancies listed right now</h3>
+        <p>We are always happy to hear from people who share our values. Register your interest and we will be in touch when opportunities come up.</p>
+        <a class="btn" href="{% url 'careweb:contact' %}?topic=careers">Register your interest</a>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% if faqs %}
+<section class="section">
+  <div class="wrap faq-layout">
+    <div><h2>Questions about working with us</h2><p class="lead">Ask us anything about roles, hours or training.</p></div>
+    {% include "careweb/partials/faq_list.html" %}
+  </div>
+</section>
+{% endif %}
+
+{% include "careweb/partials/cta.html" with cta_title="Interested in a career in care?" cta_text="Tell us a little about yourself and the kind of role you are looking for." %}
+{% endblock %}

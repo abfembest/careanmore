@@ -1,0 +1,40 @@
+{% extends "careweb/pages/legal_base.html" %}
+{% load careweb_tags %}
+{% block meta_description %}How {{ site.organisation_name }} collects, uses and protects personal information shared through this website.{% endblock %}
+
+{% block contents %}
+<li><a href="#who">Who we are {% icon "chevron-right" %}</a></li>
+<li><a href="#what">What we collect {% icon "chevron-right" %}</a></li>
+<li><a href="#why">Why we use it {% icon "chevron-right" %}</a></li>
+<li><a href="#keep">How long we keep it {% icon "chevron-right" %}</a></li>
+<li><a href="#rights">Your rights {% icon "chevron-right" %}</a></li>
+<li><a href="#complain">Complaints {% icon "chevron-right" %}</a></li>
+{% endblock %}
+
+{% block legal_content %}
+<h2 id="who">Who we are</h2>
+<p>{{ site.organisation_name }} is the data controller for personal information collected through this website.{% if site.email %} You can contact us about privacy at <a href="mailto:{{ site.email }}">{{ site.email }}</a>.{% endif %}</p>
+
+<h2 id="what">What information we collect</h2>
+<p>When you send an enquiry we collect the details you choose to give us, such as:</p>
+<ul>
+  <li>your name and preferred contact method</li>
+  <li>your email address and phone number</li>
+  <li>your postcode, so we can check whether we cover your area</li>
+  <li>the topic of your enquiry and any short message</li>
+</ul>
+<p>Please do not include detailed medical information in the online form. We will discuss anything relevant with you directly.</p>
+
+<h2 id="why">Why we use it</h2>
+<p>We use your information to respond to your enquiry and to discuss whether our service may be suitable. Our lawful basis is your request for us to contact you (legitimate interests) and, where relevant, taking steps before entering into a contract.</p>
+<p>We do not sell your information, and we do not use it for marketing without your permission.</p>
+
+<h2 id="keep">How long we keep it</h2>
+<p>We keep enquiry records only for as long as needed to respond and for any follow-up, after which they are securely deleted. The exact retention period will be confirmed here.</p>
+
+<h2 id="rights">Your rights</h2>
+<p>Under UK data protection law you have the right to ask for a copy of your information, to have it corrected or deleted, and to object to or restrict how it is used.</p>
+
+<h2 id="complain">Complaints</h2>
+<p>If you are unhappy with how we have handled your information, please contact us first. You can also complain to the <a href="https://ico.org.uk/make-a-complaint/" rel="noopener">Information Commissioner’s Office (ICO)</a>.</p>
+{% endblock %}

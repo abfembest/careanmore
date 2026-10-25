@@ -1,0 +1,51 @@
+{% extends "careweb/base.html" %}
+{% load careweb_tags %}
+{% block title %}How it works | Care Anmore{% endblock %}
+{% block meta_description %}From your first conversation to agreed support at home: how getting started with Care Anmore works.{% endblock %}
+
+{% block content %}
+{% include "careweb/partials/page_hero.html" with title="How it works" label="Getting started" lead="We begin with a conversation. Any proposed support is discussed and assessed before arrangements are agreed." image_src="https://images.unsplash.com/photo-1773227055624-07b515ba87c5?auto=format&fit=crop&w=800&q=80" image_alt="A carer walking alongside an older woman using a walking frame" %}
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Four steps, at your pace</h2>
+      <p>You can ask questions at any point, and involve family or a representative if you would like to.</p>
+    </div>
+    <ol class="steps" style="--steps:4">
+      <li class="step"><span class="step__num" aria-hidden="true"></span><h3>Talk with us</h3><p>Tell us what you are looking for, ask questions and share the best way to contact you.</p></li>
+      <li class="step"><span class="step__num" aria-hidden="true"></span><h3>Understand your needs</h3><p>We discuss routines, preferences, goals and any relevant considerations for safe support.</p></li>
+      <li class="step"><span class="step__num" aria-hidden="true"></span><h3>Agree next steps</h3><p>If the service is suitable and capacity is available, the proposed plan and arrangements are discussed with you.</p></li>
+      <li class="step"><span class="step__num" aria-hidden="true"></span><h3>Review together</h3><p>Once support begins, we keep talking and review the plan when needs or circumstances change.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="section section--cream">
+  <div class="wrap split">
+    <div>
+      <h2>What to have ready for the first conversation</h2>
+      <p class="lead">You do not need everything below. It simply helps us understand what might be right for you.</p>
+      <ul class="checklist">
+        <li><span class="tick">{% icon "check" %}</span>The area or postcode where support would be needed</li>
+        <li><span class="tick">{% icon "check" %}</span>The kind of help you are looking for and when</li>
+        <li><span class="tick">{% icon "check" %}</span>Routines, preferences and things that matter to you</li>
+        <li><span class="tick">{% icon "check" %}</span>Who else you would like involved, such as family</li>
+      </ul>
+      <div class="inset">
+        <p>Please do not include detailed medical information in the online enquiry form. We will discuss anything relevant with you directly.</p>
+      </div>
+    </div>
+    <div class="expect">
+      <h3>Who can make an enquiry?</h3>
+      <ul>
+        <li><span class="tick">{% icon "heart" %}</span><div><h4>You</h4><p>If you are looking for support for yourself.</p></div></li>
+        <li><span class="tick">{% icon "users" %}</span><div><h4>Family or a representative</h4><p>Where possible, we involve the person who would receive support.</p></div></li>
+        <li><span class="tick">{% icon "clipboard" %}</span><div><h4>Professionals</h4><p>Health and social care professionals can make a referral.</p></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+{% include "careweb/partials/cta.html" %}
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "careweb/pages/legal_base.html" %}
+{% load careweb_tags %}
+{% block meta_description %}Information about the cookies used on the Care Anmore website.{% endblock %}
+
+{% block contents %}
+<li><a href="#about">About cookies {% icon "chevron-right" %}</a></li>
+<li><a href="#essential">Essential cookies {% icon "chevron-right" %}</a></li>
+<li><a href="#manage">Managing cookies {% icon "chevron-right" %}</a></li>
+{% endblock %}
+
+{% block legal_content %}
+<h2 id="about">About cookies</h2>
+<p>Cookies are small files saved on your device when you visit a website. They help the website work and remember information about your visit.</p>
+
+<h2 id="essential">Essential cookies we use</h2>
+<p>This website only uses cookies that are needed for it to work. We do not use analytics or advertising cookies.</p>
+<dl class="summary-list">
+  <dt>csrftoken</dt><dd>Protects the enquiry form from misuse. Expires after one year.</dd>
+  <dt>sessionid</dt><dd>Remembers your visit while you send an enquiry. Expires when you close your browser or after two weeks.</dd>
+</dl>
+<p>If analytics are added in future, this page will be updated and we will ask for your consent first.</p>
+
+<h2 id="manage">Managing cookies</h2>
+<p>You can block or delete cookies in your browser settings. If you block essential cookies, the enquiry form may not work.</p>
+{% endblock %}

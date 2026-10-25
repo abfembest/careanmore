@@ -1,0 +1,9 @@
+{% load careweb_tags %}
+<div class="details-group">
+  {% for faq in faqs %}
+    <details class="details">
+      <summary><span>{{ faq.question }}</span><span class="details__chev">{% icon "chevron-down" %}</span></summary>
+      <div class="details__body">{{ faq.answer|linebreaks }}</div>
+    </details>
+  {% endfor %}
+</div>

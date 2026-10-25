@@ -1,0 +1,42 @@
+{% extends "careweb/base.html" %}
+{% load careweb_tags %}
+{% block title %}Our care | Care Anmore{% endblock %}
+{% block meta_description %}Personal care, daily living support, companionship and planned visits at home in {{ site.service_area }}.{% endblock %}
+
+{% block content %}
+{% include "careweb/partials/page_hero.html" with title="Our care" label="Homecare services" lead="Support for everyday life at home, shaped around your needs and agreed with you." %}
+
+<section class="section">
+  <div class="wrap">
+    <div class="inset" style="margin-top:0;margin-bottom:40px">
+      <p>The support described here gives an idea of what may be possible. The final care arrangement depends on an individual assessment and confirmed service scope.</p>
+    </div>
+    <div class="grid grid--3">
+      {% for svc in services %}
+        {% include "careweb/partials/service_card.html" %}
+      {% empty %}
+        <div class="empty-state" style="grid-column:1/-1">{% icon "heart" %}<h2>Service details are on their way</h2><p>Contact the team to talk about the support you are looking for.</p><a class="btn" href="{% url 'careweb:contact' %}">Make an enquiry</a></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section--cream section--tight">
+  <div class="wrap split">
+    <div>
+      <h2>Not sure what kind of support you need?</h2>
+      <p class="lead">That is completely normal. Tell us a little about the situation and we will talk through the options with you.</p>
+    </div>
+    <div>
+      <ul class="checklist">
+        <li><span class="tick">{% icon "check" %}</span>Enquiries from individuals, families and representatives</li>
+        <li><span class="tick">{% icon "check" %}</span>Referrals from health and social care professionals</li>
+        <li><span class="tick">{% icon "check" %}</span>Clear explanations of the assessment process</li>
+      </ul>
+      <a class="action-link" href="{% url 'careweb:how_it_works' %}"><span class="action-link__badge">{% icon "arrow-right" %}</span><span>See how getting started works</span></a>
+    </div>
+  </div>
+</section>
+
+{% include "careweb/partials/cta.html" %}
+{% endblock %}

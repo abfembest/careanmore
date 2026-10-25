@@ -1,0 +1,26 @@
+{% comment %}
+  Inner page hero with breadcrumbs.
+  Usage: {% include "careweb/partials/page_hero.html" with title="..." lead="..." label="..." image=obj crumbs=... %}
+  Breadcrumb middle item: crumb_url / crumb_label (optional).
+{% endcomment %}
+<section class="page-hero{% if not image_src %} page-hero--plain{% endif %}">
+  <div class="wrap">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="{% url 'careweb:home' %}">Home</a></li>
+          {% if crumb_url %}<li><a href="{{ crumb_url }}">{{ crumb_label }}</a></li>{% endif %}
+          <li aria-current="page">{{ title }}</li>
+        </ol>
+      </nav>
+      {% if label %}<span class="tag" style="margin-top:22px">{{ label }}</span>{% endif %}
+      <h1>{{ title }}</h1>
+      {% if lead %}<p class="lead">{{ lead }}</p>{% endif %}
+    </div>
+    {% if image_src %}
+      <div class="page-hero__media">
+        <div class="arch"><img src="{{ image_src }}" alt="{{ image_alt }}" width="380" height="400" fetchpriority="high"></div>
+      </div>
+    {% endif %}
+  </div>
+</section>

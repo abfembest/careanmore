@@ -1,0 +1,7 @@
+{% load careweb_tags %}
+<div class="field{% if full %} field--full{% endif %}{% if field.errors %} field--error{% endif %}">
+  <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="field__req" aria-hidden="true">*</span>{% elif req_for %} <span class="field__req" data-req-for="{{ req_for }}" hidden>*</span>{% endif %}</label>
+  {% if field.help_text %}<p class="field__hint" id="{{ field.id_for_label }}-hint">{{ field.help_text }}</p>{% endif %}
+  {% for error in field.errors %}<p class="field__error" id="{{ field.id_for_label }}-error"><span class="visually-hidden">Error:</span>{{ error }}</p>{% endfor %}
+  {{ field|add_class:"" }}
+</div>

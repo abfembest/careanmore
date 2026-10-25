@@ -1,0 +1,28 @@
+{% extends "careweb/pages/legal_base.html" %}
+{% load careweb_tags %}
+{% block meta_description %}Accessibility statement for the Care Anmore website.{% endblock %}
+
+{% block contents %}
+<li><a href="#using">Using this website {% icon "chevron-right" %}</a></li>
+<li><a href="#status">Compliance status {% icon "chevron-right" %}</a></li>
+<li><a href="#feedback">Feedback and contact {% icon "chevron-right" %}</a></li>
+{% endblock %}
+
+{% block legal_content %}
+<h2 id="using">Using this website</h2>
+<p>We want as many people as possible to be able to use this website. For example, you should be able to:</p>
+<ul>
+  <li>zoom in up to 400% without the text spilling off the screen</li>
+  <li>navigate the whole website using just a keyboard</li>
+  <li>pause the moving slideshow on the home page</li>
+  <li>use the website with a screen reader</li>
+  <li>use the website on a phone, tablet or computer</li>
+</ul>
+<p>The website respects your device’s “reduce motion” setting and uses high-visibility focus styles.</p>
+
+<h2 id="status">Compliance status</h2>
+<p>This website has been designed to meet the Web Content Accessibility Guidelines (WCAG) 2.2 at level AA. It has not yet been independently audited. Any known issues will be listed here.</p>
+
+<h2 id="feedback">Feedback and contact information</h2>
+<p>If you find a problem with this website or need information in a different format, such as large print or easy read, please <a href="{% url 'careweb:contact' %}">contact us</a>.</p>
+{% endblock %}

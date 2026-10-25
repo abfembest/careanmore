@@ -1,0 +1,34 @@
+{% extends "careweb/base.html" %}
+{% load careweb_tags %}
+{% block title %}Frequently asked questions | Care Anmore{% endblock %}
+{% block meta_description %}Answers to common questions about enquiries, homecare support, families and careers at Care Anmore.{% endblock %}
+
+{% block content %}
+{% include "careweb/partials/page_hero.html" with title="Frequently asked questions" lead="Answers to common questions about getting started, our care and working with us." %}
+
+<section class="section">
+  <div class="wrap content-layout">
+    <div>
+      {% for group in groups %}
+        <h2 id="{{ group.key }}" style="font-size:clamp(1.6rem,1.35rem + 1vw,2.1rem);{% if not forloop.first %}margin-top:56px{% endif %}">{{ group.label }}</h2>
+        {% include "careweb/partials/faq_list.html" with faqs=group.items %}
+      {% empty %}
+        <div class="empty-state">{% icon "chat" %}<h2>No questions published yet</h2><p>Contact the team and we will be happy to answer your question.</p></div>
+      {% endfor %}
+    </div>
+    <aside class="sidebar">
+      {% if groups %}
+      <nav class="side-card contents-list" aria-labelledby="contents-title">
+        <h3 id="contents-title">Contents</h3>
+        <ul>{% for group in groups %}<li><a href="#{{ group.key }}">{{ group.label }} {% icon "chevron-right" %}</a></li>{% endfor %}</ul>
+      </nav>
+      {% endif %}
+      <div class="side-card side-card--teal">
+        <h3>Still have a question?</h3>
+        <p>Ask us directly and we will get back to you.</p>
+        <a class="btn btn--block" href="{% url 'careweb:contact' %}">Ask a question</a>
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}

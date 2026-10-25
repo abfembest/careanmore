@@ -1,0 +1,60 @@
+{% extends "careweb/base.html" %}
+{% load careweb_tags %}
+{% block title %}{{ service.title }} | Our care | Care Anmore{% endblock %}
+{% block meta_description %}{{ service.meta_description|default:service.summary }}{% endblock %}
+{% block og_title %}{{ service.title }} | Care Anmore{% endblock %}
+{% block og_image %}<meta property="og:image" content="{{ service.image_src }}">{% endblock %}
+
+{% block content %}
+{% url 'careweb:services' as services_url %}
+{% include "careweb/partials/page_hero.html" with title=service.title lead=service.summary crumb_url=services_url crumb_label="Our care" image_src=service.image_src image_alt=service.image_alt %}
+
+<section class="section">
+  <div class="wrap content-layout">
+    <article class="prose">
+      {% if service.intro %}<p class="lead">{{ service.intro }}</p>{% endif %}
+      {% for p in service.body_paragraphs %}<p>{{ p }}</p>{% endfor %}
+
+      {% if service.includes_list %}
+        <h2>What support can include</h2>
+        <ul class="checklist checklist--cols">
+          {% for item in service.includes_list %}
+            <li><span class="tick">{% icon "check" %}</span>{{ item }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <div class="inset">
+        <p>Support is agreed with you following an individual assessment. What we can provide depends on your assessed needs and our availability in your area.</p>
+      </div>
+
+      <h2>Getting started</h2>
+      <ol class="steps" style="--steps:3;margin-top:24px">
+        <li class="step"><span class="step__num" aria-hidden="true"></span><h3>Talk with us</h3><p>Share what you are looking for.</p></li>
+        <li class="step"><span class="step__num" aria-hidden="true"></span><h3>Understand your needs</h3><p>We discuss routines and goals.</p></li>
+        <li class="step"><span class="step__num" aria-hidden="true"></span><h3>Agree next steps</h3><p>We explain the plan clearly.</p></li>
+      </ol>
+    </article>
+
+    <aside class="sidebar" aria-label="Ask about {{ service.title|lower }}">
+      <div class="side-card side-card--teal">
+        <h3>Ask about {{ service.title|lower }}</h3>
+        <p>Tell us what you are looking for and how you would like to be contacted.</p>
+        <a class="btn btn--block" href="{% url 'careweb:contact' %}?service={{ service.slug }}">Make an enquiry</a>
+        {% if site.phone %}<p style="margin:16px 0 0">Or call <a href="{{ site.phone_href }}" style="color:#fff;font-weight:700">{{ site.phone }}</a></p>{% endif %}
+      </div>
+      {% if related %}
+      <div class="side-card">
+        <h3>Other support</h3>
+        <ul>
+          {% for r in related %}<li><a href="{{ r.get_absolute_url }}">{{ r.title }} {% icon "chevron-right" %}</a></li>{% endfor %}
+          <li><a href="{% url 'careweb:services' %}">All our care {% icon "chevron-right" %}</a></li>
+        </ul>
+      </div>
+      {% endif %}
+    </aside>
+  </div>
+</section>
+
+{% include "careweb/partials/cta.html" %}
+{% endblock %}

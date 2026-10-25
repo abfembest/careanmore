@@ -1,0 +1,180 @@
+{% extends "careweb/base.html" %}
+{% load static careweb_tags %}
+
+{% block extra_head %}
+  {% with first=slides.0 %}{% if first %}<link rel="preload" as="image" href="{{ first.image_src }}">{% endif %}{% endwith %}
+{% endblock %}
+{% block og_image %}{% with first=slides.0 %}{% if first %}<meta property="og:image" content="{{ first.image_src }}">{% endif %}{% endwith %}{% endblock %}
+
+{% block content %}
+
+{# ---------------- Hero carousel ---------------- #}
+<section class="hero" aria-roledescription="carousel" aria-label="Introducing Care Anmore" data-carousel data-interval="4500">
+  <div class="wrap">
+    <div class="hero__track">
+      {% for slide in slides %}
+        <div class="hero-slide{% if forloop.first %} is-active{% endif %}" role="group" aria-roledescription="slide" aria-label="{{ forloop.counter }} of {{ slides|length }}"{% if not forloop.first %} aria-hidden="true"{% endif %}>
+          <div>
+            {% if slide.label %}<span class="tag hero-slide__label">{{ slide.label }}</span>{% endif %}
+            {% if forloop.first %}<h1>{{ slide.heading }}</h1>{% else %}<h2>{{ slide.heading }}</h2>{% endif %}
+            <p class="hero-slide__text">{{ slide.text }}</p>
+            <div class="hero-slide__actions">
+              <a class="btn" href="{{ slide.button_link }}">{{ slide.button_text }}</a>
+              {% if slide.secondary_text %}<a class="btn btn--light" href="{{ slide.secondary_link }}">{{ slide.secondary_text }}</a>{% endif %}
+            </div>
+            <p class="hero-slide__note">{% icon "pin" %}Serving {{ site.service_area }}. Availability is discussed individually.</p>
+          </div>
+          <div class="hero-slide__media">
+            <div class="arch">
+              <img src="{{ slide.image_src }}" alt="{{ slide.image_alt }}" width="470" height="550"{% if forloop.first %} fetchpriority="high"{% else %} loading="lazy"{% endif %} decoding="async">
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="hero-slide is-active">
+          <div>
+            <span class="tag hero-slide__label">Personalised homecare</span>
+            <h1>Care that starts with you</h1>
+            <p class="hero-slide__text">Thoughtful support at home, shaped around your needs, routines and choices.</p>
+            <div class="hero-slide__actions"><a class="btn" href="{% url 'careweb:contact' %}">Start a conversation</a></div>
+          </div>
+          <div class="hero-slide__media"><div class="arch"></div></div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if slides|length > 1 %}
+  <div class="hero__controls">
+    <div class="wrap">
+      <button class="hero__btn" type="button" data-prev aria-label="Previous slide">{% icon "chevron-left" %}</button>
+      <ul class="hero__dots">
+        {% for slide in slides %}
+          <li><button class="hero__dot" type="button" aria-label="Show slide {{ forloop.counter }}: {{ slide.heading }}"{% if forloop.first %} aria-current="true"{% endif %}></button></li>
+        {% endfor %}
+      </ul>
+      <button class="hero__btn" type="button" data-next aria-label="Next slide">{% icon "chevron-right" %}</button>
+      <button class="hero__btn" type="button" data-play aria-label="Pause slideshow"><svg class="icon" aria-hidden="true"><use href="#i-pause"></use></svg></button>
+      <span class="hero__count" aria-hidden="true">1 / {{ slides|length }}</span>
+      <span class="visually-hidden" aria-live="polite" data-live></span>
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+{# ---------------- Trust strip ---------------- #}
+<div class="trust">
+  <div class="wrap">
+    <ul>
+      <li><span class="tick">{% icon "check" %}</span>Care shaped around the individual</li>
+      <li><span class="tick">{% icon "check" %}</span>Respect for dignity and choice</li>
+      <li><span class="tick">{% icon "check" %}</span>Clear communication with you</li>
+    </ul>
+  </div>
+</div>
+
+{# ---------------- Services ---------------- #}
+<section class="section" id="services" aria-labelledby="services-title">
+  <div class="wrap">
+    <div class="section-head section-head__row">
+      <div>
+        <h2 id="services-title">Support for everyday life</h2>
+        <p>We will discuss your circumstances and preferences to understand what support may be appropriate. The final care arrangement depends on an individual assessment and confirmed service scope.</p>
+      </div>
+      <a class="btn btn--outline" href="{% url 'careweb:services' %}">See all our care</a>
+    </div>
+    <div class="grid grid--3">
+      {% for svc in services %}
+        {% include "careweb/partials/service_card.html" %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ---------------- Approach ---------------- #}
+<section class="section section--cream" id="about" aria-labelledby="approach-title">
+  <div class="wrap">
+    <div class="split">
+      <div class="media-stack">
+        <div class="media-stack__main">
+          <img src="https://images.unsplash.com/photo-1758612897741-9fcb791f83ff?auto=format&fit=crop&w=900&q=80" alt="A young person adjusting their grandfather’s collar while sitting together on a sofa" width="460" height="530" loading="lazy">
+        </div>
+        <div class="media-stack__badge">
+          <strong>Support with dignity.</strong>
+          <span>Respect, choice and wellbeing guide every visit.</span>
+        </div>
+      </div>
+      <div>
+        <span class="tag">Our approach</span>
+        <h2 id="approach-title" style="margin-top:14px">You’re a person first. Always.</h2>
+        <p class="lead">Good care is built on listening, trust and respect.</p>
+        <p>We want people to have a voice in how support is provided. That means taking time to understand preferences, explaining choices clearly and agreeing support together wherever possible.</p>
+        <p>Our aim is to encourage independence, not to take over tasks unnecessarily, and to communicate clearly when needs or circumstances change.</p>
+        <div class="expect" style="margin-top:28px">
+          <h3>What you can expect</h3>
+          <ul>
+            <li><span class="tick">{% icon "chat" %}</span><div><h4>To be listened to</h4><p>Your preferences, routines and goals guide the conversation.</p></div></li>
+            <li><span class="tick">{% icon "heart" %}</span><div><h4>To be treated with respect</h4><p>Your privacy, dignity, culture and choices matter.</p></div></li>
+            <li><span class="tick">{% icon "clipboard" %}</span><div><h4>To understand the next step</h4><p>We explain the assessment and planning process in clear language.</p></div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="values">
+      <div class="value">{% icon "shield" %}<strong>Dignity</strong><p>Respectful care and privacy in your own home.</p></div>
+      <div class="value">{% icon "hand" %}<strong>Choice</strong><p>Support shaped around personal preferences.</p></div>
+      <div class="value">{% icon "users" %}<strong>Inclusion</strong><p>Communication that respects individual needs.</p></div>
+      <div class="value">{% icon "leaf" %}<strong>Wellbeing</strong><p>Support for everyday life and personal goals.</p></div>
+    </div>
+  </div>
+</section>
+
+{# ---------------- How it works ---------------- #}
+<section class="section" id="how-it-works" aria-labelledby="how-title">
+  <div class="wrap">
+    <div class="section-head section-head__row">
+      <div>
+        <h2 id="how-title">A clear, thoughtful first step</h2>
+        <p>We begin with a conversation. No two people are the same, so any proposed support must be discussed and assessed before arrangements are agreed.</p>
+      </div>
+      <a class="action-link" href="{% url 'careweb:how_it_works' %}"><span class="action-link__badge">{% icon "arrow-right" %}</span><span>How it works in detail</span></a>
+    </div>
+    <ol class="steps">
+      <li class="step"><span class="step__num" aria-hidden="true"></span><h3>Talk with us</h3><p>Tell us what you are looking for, ask questions and share the best way to contact you.</p></li>
+      <li class="step"><span class="step__num" aria-hidden="true"></span><h3>Understand your needs</h3><p>We discuss routines, preferences, goals and any relevant considerations for safe support.</p></li>
+      <li class="step"><span class="step__num" aria-hidden="true"></span><h3>Agree next steps</h3><p>If the service is suitable and capacity is available, the proposed plan and arrangements can be discussed.</p></li>
+    </ol>
+  </div>
+</section>
+
+{# ---------------- Area ---------------- #}
+<section class="section section--mint section--tight" aria-labelledby="area-title">
+  <div class="wrap">
+    <div class="area">
+      <span class="area__icon">{% icon "pin" %}</span>
+      <div>
+        <h2 id="area-title">Homecare in {{ site.service_area }}</h2>
+        <p>Coverage is confirmed individually. Add your postcode to your enquiry and we will let you know whether we can help.</p>
+      </div>
+      <a class="btn" href="{% url 'careweb:contact' %}">Check your area</a>
+    </div>
+  </div>
+</section>
+
+{# ---------------- FAQs ---------------- #}
+{% if faqs %}
+<section class="section" aria-labelledby="faq-title">
+  <div class="wrap faq-layout">
+    <div>
+      <h2 id="faq-title">Questions people often ask</h2>
+      <p class="lead">If you cannot find what you are looking for, get in touch and we will be happy to help.</p>
+      <a class="action-link" href="{% url 'careweb:faqs' %}"><span class="action-link__badge">{% icon "arrow-right" %}</span><span>Read all FAQs</span></a>
+    </div>
+    {% include "careweb/partials/faq_list.html" %}
+  </div>
+</section>
+{% endif %}
+
+{% include "careweb/partials/cta.html" %}
+{% endblock %}

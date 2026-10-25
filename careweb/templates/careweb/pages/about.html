@@ -1,0 +1,73 @@
+{% extends "careweb/base.html" %}
+{% load careweb_tags %}
+{% block title %}About us | Care Anmore{% endblock %}
+{% block meta_description %}Care Anmore provides personalised homecare built on listening, trust and respect. Find out about our approach and values.{% endblock %}
+
+{% block content %}
+{% include "careweb/partials/page_hero.html" with title="About us" label="Who we are" lead="Care Anmore offers personalised homecare support shaped around each person’s needs, routines and choices." image_src="https://images.unsplash.com/photo-1765896387377-e293914d1e69?auto=format&fit=crop&w=800&q=80" image_alt="Two women laughing together indoors" %}
+
+<section class="section">
+  <div class="wrap split split--wide-left">
+    <div class="prose">
+      <h2>Care that starts with you</h2>
+      <p class="lead">Every person is different. We believe support should respect what matters to you, help you feel heard and encourage independence in everyday life.</p>
+      <p>We work with people living in {{ site.service_area }}, and with the families, representatives and professionals who support them. Our role is to listen first, explain clearly and agree support together.</p>
+      <p>We take account of each person’s communication preferences, culture, strengths and goals, and we keep talking as needs change.</p>
+      <div class="inset">
+        <p>Any support we provide is based on an individual assessment and agreed arrangements. An enquiry is the start of a conversation, not a care booking.</p>
+      </div>
+    </div>
+    <div class="media-stack">
+      <div class="media-stack__main"><img src="https://images.unsplash.com/photo-1454875392665-2ac2c85e8d3e?auto=format&fit=crop&w=900&q=80" alt="One person gently holding another person’s hand" width="460" height="530" loading="lazy"></div>
+      <div class="media-stack__badge"><strong>Listening first.</strong><span>Your voice shapes your support.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--cream" aria-labelledby="values-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="values-title">The values behind our care</h2>
+      <p>These shape how we speak with you, how we plan support and how we work in your home.</p>
+    </div>
+    <div class="grid grid--4">
+      <div class="feature"><span class="feature__icon">{% icon "shield" %}</span><h3>Dignity</h3><p>Respectful care and privacy in your own home.</p></div>
+      <div class="feature"><span class="feature__icon">{% icon "hand" %}</span><h3>Choice</h3><p>Support shaped around your personal preferences.</p></div>
+      <div class="feature"><span class="feature__icon">{% icon "users" %}</span><h3>Inclusion</h3><p>Communication that respects individual needs.</p></div>
+      <div class="feature"><span class="feature__icon">{% icon "leaf" %}</span><h3>Wellbeing</h3><p>Support for everyday life and personal goals.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="promise-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="promise-title">How we work with you</h2>
+      <p>Clear expectations help everyone feel confident about support at home.</p>
+    </div>
+    <div class="dodont">
+      <div class="dodont__col">
+        <h3>We will</h3>
+        <ul>
+          <li>{% icon "check" %}Take time to understand your preferences and routines</li>
+          <li>{% icon "check" %}Explain choices and next steps in clear language</li>
+          <li>{% icon "check" %}Encourage you to do the things you want to do yourself</li>
+          <li>{% icon "check" %}Respect your privacy, culture and identity</li>
+          <li>{% icon "check" %}Tell you when needs or circumstances change</li>
+        </ul>
+      </div>
+      <div class="dodont__col dodont__col--dont">
+        <h3>We won’t</h3>
+        <ul>
+          <li>{% icon "x" %}Make decisions about your support without you</li>
+          <li>{% icon "x" %}Take over tasks you would rather do yourself</li>
+          <li>{% icon "x" %}Agree arrangements before an assessment</li>
+          <li>{% icon "x" %}Share your information without a lawful reason</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% include "careweb/partials/cta.html" %}
+{% endblock %}

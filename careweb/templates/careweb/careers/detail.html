@@ -1,0 +1,38 @@
+{% extends "careweb/base.html" %}
+{% load careweb_tags %}
+{% block title %}{{ vacancy.title }} | Careers | Care Anmore{% endblock %}
+{% block meta_description %}{{ vacancy.summary }}{% endblock %}
+
+{% block content %}
+{% url 'careweb:careers' as careers_url %}
+{% include "careweb/partials/page_hero.html" with title=vacancy.title lead=vacancy.summary crumb_url=careers_url crumb_label="Careers" %}
+
+<section class="section">
+  <div class="wrap content-layout">
+    <article class="prose">
+      <dl class="summary-list">
+        <dt>Location</dt><dd>{{ vacancy.location }}</dd>
+        <dt>Contract</dt><dd>{{ vacancy.get_contract_display }}</dd>
+        {% if vacancy.salary %}<dt>Pay</dt><dd>{{ vacancy.salary }}</dd>{% endif %}
+        {% if vacancy.closing_date %}<dt>Closing date</dt><dd>{{ vacancy.closing_date|date:"j F Y" }}</dd>{% endif %}
+      </dl>
+      <h2>About the role</h2>
+      {% for p in vacancy.description_paragraphs %}<p>{{ p }}</p>{% endfor %}
+      {% if vacancy.requirements_list %}
+        <h2>What you will need</h2>
+        <ul class="checklist">
+          {% for r in vacancy.requirements_list %}<li><span class="tick">{% icon "check" %}</span>{{ r }}</li>{% endfor %}
+        </ul>
+      {% endif %}
+    </article>
+    <aside class="sidebar">
+      <div class="side-card side-card--teal">
+        <h3>Interested in this role?</h3>
+        <p>Send us a short message and the team will be in touch about next steps.</p>
+        <a class="btn btn--block" href="{% url 'careweb:contact' %}?topic=careers">Apply or ask a question</a>
+      </div>
+      <div class="side-card"><a class="action-link" href="{{ careers_url }}"><span class="action-link__badge">{% icon "chevron-left" %}</span><span>All opportunities</span></a></div>
+    </aside>
+  </div>
+</section>
+{% endblock %}

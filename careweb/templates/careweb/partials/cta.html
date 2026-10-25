@@ -1,0 +1,15 @@
+{% load careweb_tags %}
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="cta">
+      <div>
+        <h2>{{ cta_title|default:"Let’s start with a conversation" }}</h2>
+        <p>{{ cta_text|default:"Tell us what you are looking for and how you would like to be contacted. We will explain the next steps in clear language." }}</p>
+      </div>
+      <div class="cta__actions">
+        <a class="btn" href="{% url 'careweb:contact' %}">Make an enquiry</a>
+        {% if site.phone %}<a class="btn btn--light" href="{{ site.phone_href }}">{% icon "phone" %}Call {{ site.phone }}</a>{% endif %}
+      </div>
+    </div>
+  </div>
+</section>

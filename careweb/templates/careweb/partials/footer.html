@@ -1,0 +1,74 @@
+{% load static careweb_tags %}
+<aside class="help-strip" aria-label="Urgent help">
+  <div class="wrap">
+    {% icon "alert" %}
+    <p><strong>Need help now?</strong> If someone is in immediate danger or seriously ill, call <a href="tel:999">999</a>. For urgent medical help that is not life-threatening, go to <a href="https://111.nhs.uk/" rel="noopener">111.nhs.uk</a> or call 111. This website is not monitored for emergencies.</p>
+  </div>
+</aside>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <img class="footer-logo" src="{% static 'careweb/img/logo.svg' %}" alt="Care Anmore" width="210" height="56" loading="lazy">
+        <p>Personalised homecare support shaped around the person.</p>
+        <div class="footer-contact">
+          <span>{% icon "pin" %}{{ site.service_area }}</span>
+          {% if site.phone %}<a href="{{ site.phone_href }}">{% icon "phone" %}{{ site.phone }}</a>{% endif %}
+          {% if site.email %}<a href="mailto:{{ site.email }}">{% icon "mail" %}{{ site.email }}</a>{% endif %}
+          {% if site.opening_hours %}<span>{% icon "clock" %}{{ site.opening_hours }}</span>{% endif %}
+        </div>
+        {% if site.facebook_url or site.linkedin_url or site.instagram_url %}
+        <div class="footer-social">
+          {% if site.facebook_url %}<a href="{{ site.facebook_url }}" rel="noopener">Facebook</a>{% endif %}
+          {% if site.linkedin_url %}<a href="{{ site.linkedin_url }}" rel="noopener">LinkedIn</a>{% endif %}
+          {% if site.instagram_url %}<a href="{{ site.instagram_url }}" rel="noopener">Instagram</a>{% endif %}
+        </div>
+        {% endif %}
+      </div>
+
+      <nav aria-labelledby="f-care">
+        <h2 id="f-care">Our care</h2>
+        <ul>
+          {% for svc in nav_services %}<li><a href="{{ svc.get_absolute_url }}">{{ svc.title }}</a></li>{% endfor %}
+          <li><a href="{% url 'careweb:services' %}">All our care</a></li>
+        </ul>
+      </nav>
+
+      <nav aria-labelledby="f-about">
+        <h2 id="f-about">About</h2>
+        <ul>
+          <li><a href="{% url 'careweb:about' %}">About us</a></li>
+          <li><a href="{% url 'careweb:how_it_works' %}">How it works</a></li>
+          <li><a href="{% url 'careweb:careers' %}">Careers</a></li>
+          <li><a href="{% url 'careweb:faqs' %}">FAQs</a></li>
+          <li><a href="{% url 'careweb:contact' %}">Contact us</a></li>
+        </ul>
+      </nav>
+
+      <nav aria-labelledby="f-help">
+        <h2 id="f-help">Information</h2>
+        <ul>
+          <li><a href="{% url 'careweb:privacy' %}">Privacy notice</a></li>
+          <li><a href="{% url 'careweb:cookies' %}">Cookies</a></li>
+          <li><a href="{% url 'careweb:accessibility' %}">Accessibility statement</a></li>
+          <li><a href="https://www.nhs.uk/" rel="noopener">NHS website</a></li>
+          <li><a href="https://www.cqc.org.uk/" rel="noopener">Care Quality Commission</a></li>
+        </ul>
+        {% if site.cqc_url %}
+          <p style="margin-top:18px"><a class="cqc-link" href="{{ site.cqc_url }}" rel="noopener">{% icon "shield" %}View our CQC profile</a></p>
+        {% endif %}
+      </nav>
+    </div>
+
+    <div class="footer-bottom">
+      <div>
+        <p>&copy; {% now "Y" %} {{ site.organisation_name }}. All rights reserved.{% if site.company_number %} Registered in England and Wales, company number {{ site.company_number }}.{% endif %}</p>
+        {% if site.show_preview_banner %}
+          <p class="disclaimer" style="margin-top:8px">Website preview content. Final service descriptions, contact details, privacy information and any regulatory statements must be verified and approved by {{ site.organisation_name }} before publication. Do not treat this preview as confirmation of registration or service availability.</p>
+        {% endif %}
+      </div>
+      <p><a href="{% url 'careweb:accessibility' %}">Accessibility</a></p>
+    </div>
+  </div>
+</footer>

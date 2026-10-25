@@ -1,0 +1,14 @@
+{% extends "careweb/base.html" %}
+{% load careweb_tags %}
+{% block title %}Page not found | Care Anmore{% endblock %}
+{% block content %}
+<section class="wrap error-page">
+  <p class="error-page__code" aria-hidden="true">404</p>
+  <h1>Page not found</h1>
+  <p class="lead">If you typed the web address, check it is correct. If you followed a link, the page may have moved.</p>
+  <p style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:28px">
+    <a class="btn" href="{% url 'careweb:home' %}">Go to the home page</a>
+    <a class="btn btn--outline" href="{% url 'careweb:contact' %}">Contact us</a>
+  </p>
+</section>
+{% endblock %}
