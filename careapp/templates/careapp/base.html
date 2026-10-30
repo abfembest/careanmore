@@ -21,22 +21,30 @@
       <img src="{{ site.logo_src }}" alt="{{ site.organisation_name }}">
     </a>
     <nav class="sidenav">
-      <a class="sidenav__link" href="{% url 'careapp:dashboard' %}"{% if nav_current == 'dashboard' %} aria-current="page"{% endif %}>{% icon "sun" %}<span>Dashboard</span></a>
+      {% if 'view' in perms_for.dashboard %}<a class="sidenav__link" href="{% url 'careapp:dashboard' %}"{% if nav_current == 'dashboard' %} aria-current="page"{% endif %}>{% icon "sun" %}<span>Dashboard</span></a>{% endif %}
 
-      <p class="sidenav__group">Care</p>
+      {% if nav_care or 'view' in perms_for.onboarding %}<p class="sidenav__group">Care</p>{% endif %}
       {% for key, cfg in nav_care %}
         <a class="sidenav__link" href="{% url 'careapp:section_list' key %}"{% if nav_current == key %} aria-current="page"{% endif %}>{% icon cfg.icon %}<span>{{ cfg.title }}</span></a>
       {% endfor %}
-      <a class="sidenav__link" href="{% url 'careapp:onboarding' %}"{% if nav_current == 'onboarding' %} aria-current="page"{% endif %}>{% icon "clipboard" %}<span>Onboarding</span></a>
+      {% if 'view' in perms_for.onboarding %}<a class="sidenav__link" href="{% url 'careapp:onboarding' %}"{% if nav_current == 'onboarding' %} aria-current="page"{% endif %}>{% icon "clipboard" %}<span>Onboarding</span></a>{% endif %}
 
-      <p class="sidenav__group">Website</p>
-      <a class="sidenav__link" href="{% url 'careapp:section_list' 'enquiries' %}"{% if nav_current == 'enquiries' %} aria-current="page"{% endif %}>{% icon "mail" %}<span>Enquiries</span>{% if new_enquiries %}<span class="badge" aria-label="{{ new_enquiries }} new">{{ new_enquiries }}</span>{% endif %}</a>
+      {% if 'view' in perms_for.enquiries or nav_site %}<p class="sidenav__group">Website</p>{% endif %}
+      {% if 'view' in perms_for.enquiries %}<a class="sidenav__link" href="{% url 'careapp:section_list' 'enquiries' %}"{% if nav_current == 'enquiries' %} aria-current="page"{% endif %}>{% icon "mail" %}<span>Enquiries</span>{% if new_enquiries %}<span class="badge" aria-label="{{ new_enquiries }} new">{{ new_enquiries }}</span>{% endif %}</a>{% endif %}
+      {% if nav_site %}
       <details class="sidenav__sub"{% if nav_site_open %} open{% endif %}>
         <summary class="sidenav__link">{% icon "shield" %}<span>Site settings</span>{% icon "chevron-down" "chev" %}</summary>
         {% for item in nav_site %}
           <a class="sidenav__link sidenav__link--sub" href="{% url item.url_name item.key %}"{% if nav_current == item.key %} aria-current="page"{% endif %}>{{ item.title }}</a>
         {% endfor %}
       </details>
+      {% endif %}
+
+      {% if 'view' in perms_for.users %}
+      <p class="sidenav__group">Team</p>
+      <a class="sidenav__link" href="{% url 'careapp:users' %}"{% if nav_current == 'users' or nav_current == 'user_edit' or nav_current == 'user_create' %} aria-current="page"{% endif %}>{% icon "users" %}<span>Users</span></a>
+      <a class="sidenav__link" href="{% url 'careapp:roles' %}"{% if nav_current == 'roles' %} aria-current="page"{% endif %}>{% icon "shield" %}<span>Roles &amp; permissions</span></a>
+      {% endif %}
     </nav>
     <div class="sidebar__foot">
       <a class="sidenav__link" href="{% url 'careweb:home' %}" target="_blank" rel="noopener">{% icon "external" %}<span>View website</span></a>
@@ -51,7 +59,7 @@
       <h1 class="topbar__title">{{ page_title|default:"Dashboard" }}</h1>
       <div class="topbar__user">
         <span class="avatar" aria-hidden="true">{{ user.get_username|first|upper }}</span>
-        <span class="topbar__name">{{ user.get_full_name|default:user.get_username }}</span>
+        <span class="topbar__name">{{ user.get_full_name|default:user.get_username }}<small>{% if user.is_superuser %}Superuser{% else %}{{ user.dashboard_role.role|default:"No role" }}{% endif %}</small></span>
         <form method="post" action="{% url 'careapp:logout' %}">{% csrf_token %}<button class="btn btn--ghost btn--sm" type="submit">Sign out</button></form>
       </div>
     </header>

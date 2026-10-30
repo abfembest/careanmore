@@ -2,7 +2,11 @@
 from datetime import datetime
 from decimal import Decimal
 
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.core.validators import FileExtensionValidator
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 
 from careweb.models import Service, TimeStampedModel
@@ -16,6 +20,40 @@ ONBOARDING_STEPS = [
     'Induction completed',
     'Shadow shifts completed',
 ]
+
+
+def private_storage():
+    """Files outside MEDIA_ROOT, served only through a permission-checked view."""
+    return FileSystemStorage(location=settings.PRIVATE_MEDIA_ROOT, base_url='/dashboard/private-media/')
+
+
+class Role(TimeStampedModel):
+    """A named set of permissions: {area: [actions]} (see careapp/permissions.py)."""
+    name = models.CharField(max_length=60, unique=True)
+    description = models.CharField(max_length=200, blank=True)
+    permissions = models.JSONField(default=dict, blank=True)
+    is_locked = models.BooleanField(default=False, editable=False,
+                                    help_text='Locked roles always have every permission.')
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    def allows(self, area, action):
+        from .permissions import AREA_ACTIONS
+        if self.is_locked:
+            return action in AREA_ACTIONS.get(area, ())
+        return action in self.permissions.get(area, ())
+
+
+class RoleAssignment(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='dashboard_role')
+    role = models.ForeignKey(Role, on_delete=models.PROTECT, related_name='assignments')
+
+    def __str__(self):
+        return f'{self.user} → {self.role}'
 
 
 class StaffMember(TimeStampedModel):
@@ -69,6 +107,9 @@ class ServiceUser(TimeStampedModel):
     first_name = models.CharField(max_length=60)
     last_name = models.CharField(max_length=60)
     status = models.CharField(max_length=20, choices=STATUSES, default='enquiry', db_index=True)
+    photo = models.FileField(upload_to='service-users/', storage=private_storage, blank=True,
+                             validators=[FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp'])],
+                             help_text='Only with consent. Stored privately: visible to signed-in team members only.')
     service = models.ForeignKey(Service, null=True, blank=True, on_delete=models.SET_NULL,
                                 verbose_name='main service')
     postcode = models.CharField(max_length=10, blank=True)
@@ -84,6 +125,14 @@ class ServiceUser(TimeStampedModel):
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
+
+    @property
+    def initials(self):
+        return f'{self.first_name[:1]}{self.last_name[:1]}'.upper()
+
+    @property
+    def photo_url(self):
+        return reverse('careapp:private_media', args=[self.photo.name]) if self.photo else ''
 
 
 class Shift(TimeStampedModel):

@@ -11,6 +11,10 @@ def cell(obj, column):
     """Render one list-table cell: choices, booleans, dates, images and relations."""
     if column == '__str__':
         return str(obj)
+    if column == 'avatar':  # photo (or initials) with the person's name
+        img = (format_html('<img class="avatar-img" src="{}" alt="" loading="lazy">', obj.photo_url) if obj.photo
+               else format_html('<span class="avatar-img avatar-img--initials" aria-hidden="true">{}</span>', obj.initials))
+        return format_html('<span class="person">{}<span>{}</span></span>', img, obj)
     if column == 'image_src':
         return format_html('<img class="thumb" src="{}" alt="" loading="lazy">', obj.image_src)
     display = getattr(obj, f'get_{column}_display', None)

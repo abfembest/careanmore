@@ -167,6 +167,14 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
 .topbar__contact { display: flex; gap: 20px; }
 .topbar__contact a, .topbar__contact span { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
 .topbar__contact a:hover { text-decoration: underline; }
+.topbar__contact { margin-left: auto; }
+.topbar__signin {
+  display: inline-flex; align-items: center; gap: 6px; margin-left: 20px; padding: 4px 12px;
+  border: 1px solid rgba(255,255,255,.35); border-radius: 999px; text-decoration: none; font-size: .875rem;
+}
+.topbar__signin:hover { background: rgba(255,255,255,.1); border-color: #fff; }
+.topbar__signin .icon { width: 1rem; height: 1rem; color: var(--gold); }
+.main-nav__signin { display: none !important; }
 
 .phase-banner { background: var(--gold-light); color: #4D3912; font-size: .925rem; border-bottom: 1px solid #E6D3A6; }
 .phase-banner .wrap { display: flex; gap: 12px; align-items: baseline; padding: 9px 0; }
@@ -655,6 +663,9 @@ select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmln
   .dropdown { position: static; width: auto; grid-template-columns: 1fr; box-shadow: none; border: 0; padding: 0 0 12px; }
   .main-nav__cta { margin: 24px 0 0; }
   .main-nav__cta .btn { width: 100%; }
+  .main-nav__cta { display: grid; gap: 10px; }
+  .main-nav__signin { display: inline-flex !important; }
+  .topbar__signin { display: none; }
   body.nav-open { overflow: hidden; }
 
   .hero-slide { grid-template-columns: 1fr; padding-top: 40px; gap: 40px; }

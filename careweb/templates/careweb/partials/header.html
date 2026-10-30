@@ -10,6 +10,7 @@
       {% if site.email %}<a href="mailto:{{ site.email }}">{% icon "mail" %}{{ site.email }}</a>{% endif %}
       {% if not site.phone and not site.email %}<span>{% icon "pin" %} {{ site.service_area }}</span>{% endif %}
     </div>
+    {% include "careweb/partials/signin_link.html" with css="topbar__signin" %}
   </div>
 </div>
 
@@ -48,6 +49,7 @@
       </ul>
       <div class="main-nav__cta">
         <a class="btn" href="{% url 'careweb:contact' %}">Talk to our team</a>
+        {% include "careweb/partials/signin_link.html" with css="btn btn--outline main-nav__signin" %}
       </div>
     </nav>
   </div>

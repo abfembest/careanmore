@@ -1,0 +1,28 @@
+{% extends "careapp/base.html" %}
+{% load careweb_tags %}
+{% block content %}
+<div class="toolbar">
+  <p class="muted">Everyone who can sign in. A person’s role decides what they can see and change. <a href="{% url 'careapp:roles' %}">Review roles &amp; permissions</a>.</p>
+  {% if can_add %}<a class="btn" href="{% url 'careapp:user_create' %}">{% icon "sparkle" %}Add user</a>{% endif %}
+</div>
+<div class="card card--flush">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th scope="col">Name</th><th scope="col">Username</th><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col">Last sign-in</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+      <tbody>
+      {% for u in object_list %}
+        <tr>
+          <td><a class="row-link" href="{% url 'careapp:user_edit' u.pk %}"><span class="person"><span class="avatar-img avatar-img--initials" aria-hidden="true">{{ u.username|first|upper }}</span><span>{{ u.get_full_name|default:u.username }}</span></span></a></td>
+          <td>{{ u.username }}</td>
+          <td>{{ u.email|default:"–" }}</td>
+          <td>{% if u.is_superuser %}<span class="pill pill--active">Superuser</span>{% elif u.dashboard_role %}<span class="pill">{{ u.dashboard_role.role }}</span>{% else %}<span class="muted">No access</span>{% endif %}</td>
+          <td>{% if u.is_active %}<span class="pill pill--yes">Active</span>{% else %}<span class="pill pill--no">Deactivated</span>{% endif %}</td>
+          <td>{{ u.last_login|date:"d M Y, H:i"|default:"Never" }}</td>
+          <td class="actions"><a class="icon-btn" href="{% url 'careapp:user_edit' u.pk %}" aria-label="Open {{ u.username }}">{% icon "chevron-right" %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

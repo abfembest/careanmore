@@ -1,0 +1,68 @@
+{% extends "careapp/base.html" %}
+{% load careweb_tags %}
+{% block content %}
+<div class="toolbar">
+  <p class="muted">Tick what each role can do. Superusers and the locked Administrator role always have full access.</p>
+</div>
+
+<form method="post" class="card card--flush">
+  {% csrf_token %}
+  <div class="table-wrap">
+    <table class="table matrix">
+      <thead>
+        <tr>
+          <th scope="col">Area</th><th scope="col">Permission</th>
+          {% for role in roles %}
+            <th scope="col" class="matrix__role">
+              <span title="{{ role.description }}">{{ role.name }}</span>
+              <small>{{ role.users }} user{{ role.users|pluralize }}{% if role.is_locked %} · locked{% endif %}</small>
+            </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr class="{% if row.first %}matrix__group{% endif %}">
+            {% if row.first %}<th scope="rowgroup" rowspan="{{ row.span }}" class="matrix__area">{{ row.area_label }}</th>{% endif %}
+            <th scope="row" class="matrix__action">{{ row.action_label }}</th>
+            {% for role, on in row.cells %}
+              <td class="matrix__cell">
+                <label class="matrix__box">
+                  <input type="checkbox" name="perm" value="{{ role.pk }}:{{ row.area }}:{{ row.action }}"{% if on %} checked{% endif %}{% if role.is_locked or not can_edit %} disabled{% endif %}>
+                  <span class="visually-hidden">{{ role.name }}: {{ row.action_label }} {{ row.area_label }}</span>
+                </label>
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+        {% if can_add %}
+        <tr class="matrix__group">
+          <th scope="row" colspan="2" class="matrix__area">Delete role</th>
+          {% for role in roles %}
+            <td class="matrix__cell">{% if not role.is_locked and not role.users %}<button class="icon-btn" form="delete-{{ role.pk }}" type="submit" aria-label="Delete role {{ role.name }}">{% icon "x" %}</button>{% else %}<span class="muted">–</span>{% endif %}</td>
+          {% endfor %}
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+  {% if can_edit %}<div class="matrix__save"><button class="btn" type="submit">Save permissions</button></div>{% endif %}
+</form>
+{% for role in roles %}{% if not role.is_locked and not role.users %}<form id="delete-{{ role.pk }}" method="post" hidden>{% csrf_token %}<input type="hidden" name="delete" value="{{ role.pk }}"></form>{% endif %}{% endfor %}
+
+{% if can_add %}
+<form method="post" class="card form narrow" style="margin-top:18px">
+  {% csrf_token %}
+  <h2 class="card__title">Add a role</h2>
+  <div class="form-grid" style="margin-top:12px">
+    {% for field in new_form %}
+      <div class="field{% if field.errors %} field--error{% endif %}">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+        {% for e in field.errors %}<p class="error">{{ e }}</p>{% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+  <div class="form-actions"><button class="btn" type="submit" name="create" value="1">Add role</button></div>
+</form>
+{% endif %}
+{% endblock %}

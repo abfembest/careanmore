@@ -3,7 +3,7 @@
 {% block content %}
 <div class="toolbar">
   <p class="muted">Track each new team member through recruitment checks and induction before they work independently.</p>
-  <a class="btn" href="{% url 'careapp:section_create' 'staff' %}">{% icon "sparkle" %}Add new starter</a>
+  {% if can_add_staff %}<a class="btn" href="{% url 'careapp:section_create' 'staff' %}">{% icon "sparkle" %}Add new starter</a>{% endif %}
 </div>
 
 {% if people %}
@@ -24,7 +24,7 @@
       <li>
         <form method="post">{% csrf_token %}
           <input type="hidden" name="staff" value="{{ p.pk }}">
-          <button class="check-btn{% if t.done %} is-done{% endif %}" name="task" value="{{ t.pk }}" type="submit" aria-pressed="{{ t.done|yesno:'true,false' }}">
+          <button class="check-btn{% if t.done %} is-done{% endif %}"{% if not can_edit %} disabled{% endif %} name="task" value="{{ t.pk }}" type="submit" aria-pressed="{{ t.done|yesno:'true,false' }}">
             <span class="check-btn__box">{% icon "check" %}</span>
             <span>{{ t.title }}{% if t.done_at %}<small class="muted"> · {{ t.done_at|date:"j M" }}</small>{% endif %}</span>
           </button>
@@ -32,7 +32,7 @@
       </li>
       {% endfor %}
     </ul>
-    {% if p.done_count == p.tasks|length %}
+    {% if can_edit and p.done_count == p.tasks|length %}
       <form method="post">{% csrf_token %}<input type="hidden" name="staff" value="{{ p.pk }}">
         <button class="btn btn--block" name="activate" value="{{ p.pk }}" type="submit">Mark as active team member</button></form>
     {% endif %}

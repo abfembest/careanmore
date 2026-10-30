@@ -125,6 +125,7 @@ a.kpi:hover { border-color: var(--teal); transform: translateY(-1px); }
 .toolbar p { margin: 0; max-width: 60ch; }
 .toolbar__search { display: flex; gap: 8px; flex-wrap: wrap; flex: 1; max-width: 640px; }
 .toolbar__search input { flex: 1; min-width: 180px; }
+.toolbar__search select { width: auto; flex: none; }
 .table-wrap { position: relative; overflow-x: auto; }
 .table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
 .table th { text-align: left; padding: 11px 16px; font-size: 13px; font-weight: 700; color: var(--muted); background: #FAFAF7; border-bottom: 1px solid var(--line); white-space: nowrap; }
@@ -215,3 +216,31 @@ textarea { resize: vertical; min-height: 96px; }
   .avatar { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- People, roles & permission matrix ---------- */
+.person { display: inline-flex; align-items: center; gap: 10px; }
+.avatar-img { width: 36px; height: 36px; flex: none; border-radius: 50%; object-fit: cover; background: var(--mint); box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--line); }
+.avatar-img--initials { display: inline-grid; place-items: center; background: var(--gold-light); color: var(--teal); font-size: 13px; font-weight: 700; }
+.preview--portrait { aspect-ratio: 1; border-radius: 50%; width: 160px; margin: 12px auto 0; }
+.topbar__name { display: flex; flex-direction: column; line-height: 1.2; font-weight: 600; }
+.topbar__name small { font-size: 12px; font-weight: 600; color: var(--muted); }
+.toast--info { background: var(--mint); color: var(--teal); }
+.check-btn:disabled { cursor: default; opacity: .75; }
+.check-btn:disabled:hover { background: none; }
+input:disabled, select:disabled, textarea:disabled { background: #F4F6F5; color: var(--muted); }
+
+.matrix th, .matrix td { white-space: nowrap; }
+.matrix thead th { vertical-align: bottom; }
+.matrix__role { text-align: center !important; min-width: 120px; }
+.matrix__role span { display: block; color: var(--teal); font-size: 14px; }
+.matrix__role small { font-weight: 600; color: var(--muted); }
+.matrix__group > * { border-top: 2px solid var(--line-2); }
+.matrix__area { font-weight: 700; color: var(--teal); vertical-align: top; background: #FBFBF8; border-right: 1px solid var(--line); }
+.matrix__action { font-weight: 600; color: var(--ink); }
+.matrix__cell { text-align: center; padding: 6px 10px !important; }
+.matrix__box { display: inline-grid; place-items: center; width: 40px; height: 34px; border-radius: 8px; cursor: pointer; }
+.matrix__box:hover { background: var(--mint-2); }
+.matrix__box input { width: 20px; height: 20px; accent-color: var(--teal); cursor: pointer; }
+.matrix__box input:disabled { cursor: not-allowed; }
+.matrix tbody tr:hover { background: #FCFCFA; }
+.matrix__save { position: sticky; bottom: 0; display: flex; justify-content: flex-end; padding: 14px 20px; background: rgba(255,255,255,.95); border-top: 1px solid var(--line); }

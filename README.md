@@ -33,8 +33,29 @@ Open http://127.0.0.1:8000/ for the site and http://127.0.0.1:8000/admin/ to edi
 
 ## Team dashboard (`careapp`)
 
-Go to http://127.0.0.1:8000/dashboard/ and sign in with a **staff** account
-(`createsuperuser`, or tick "Staff status" for a user in `/admin/`).
+Go to http://127.0.0.1:8000/dashboard/ (or use **Staff sign in** at the top of the
+website). Superusers (`createsuperuser`) have full access; everyone else needs a role.
+
+### Users, roles and the permission matrix
+
+* **Team › Users**: add people, set or reset passwords, assign a role, or deactivate
+  an account (keeps their history).
+* **Team › Roles & permissions**: one grid with every role side by side. Tick View /
+  Add / Edit / Delete for each area: dashboard overview, service users, staff, shifts,
+  onboarding, enquiries, website content and users & roles. Add or delete roles there.
+* Starter roles: **Administrator** (locked, full access), **Registered manager**,
+  **Care coordinator**, **Office administrator** and **Care worker** (read-only shifts
+  and service users). Change them to suit your team.
+* People only see the menu items their role allows. With "View" but not "Edit" a
+  record opens read-only. Someone without the dashboard overview lands on the first
+  area they can use.
+* Staff accounts that existed before roles were added were given the Administrator role.
+* Only superusers can change superuser accounts, and nobody except a superuser can
+  change their own role.
+
+**Service user photos** are optional and stored in `private_media/`, outside the
+public `media/` folder. They are only served to signed-in people whose role can view
+service users. Back this folder up, and only add photos with the person's consent.
 
 | Menu | What it does |
 | --- | --- |
@@ -54,7 +75,8 @@ python manage.py seed_careapp_demo --clear  # remove
 ```
 
 **Adding a dashboard section:** add one entry to `careapp/registry.py`
-(model, fields, columns, search). List, add, edit and delete pages are generated.
+(model, fields, columns, search, permission area). List, add, edit and delete pages
+are generated. For a brand-new permission area, add it to `careapp/permissions.py`.
 
 **Uploaded logos and photos** are stored in `media/`. Django serves them only while
 `DEBUG=True`; on a live server, configure your host (e.g. Nginx or your platform's

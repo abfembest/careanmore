@@ -5,22 +5,24 @@ from operator import or_
 from django import forms
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.views import LoginView
 from django.core.cache import cache
 from django.db import models
 from django.db.models import Count, Q, Sum
 from django.db.models.functions import TruncMonth, TruncWeek
 from django.forms import modelform_factory
-from django.http import Http404
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied, SuspiciousFileOperation
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView
 
-from django.contrib.auth.views import LoginView
-
 from careweb.models import Enquiry, SiteSettings
 
 from .models import OnboardingTask, ServiceUser, Shift, StaffMember
+from .permissions import can
 from .registry import SECTIONS, SETTINGS_PAGES
 
 DASHBOARD_CACHE_KEY = 'careapp:dashboard-stats'
@@ -40,11 +42,19 @@ class SecureLoginView(LoginView):
         return ctx
 
 
-class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+class AccessMixin(LoginRequiredMixin, UserPassesTestMixin):
+    """Checks the permission matrix: `action` for reading, `write_action` for POSTs."""
     login_url = 'careapp:login'
+    area = None
+    action = 'view'
+    write_action = 'change'
+
+    def get_area(self):
+        return self.area
 
     def test_func(self):
-        return self.request.user.is_staff
+        safe = self.request.method in ('GET', 'HEAD', 'OPTIONS')
+        return can(self.request.user, self.get_area(), self.action if safe else self.write_action)
 
 
 def _formfield(field, **kwargs):
@@ -67,8 +77,11 @@ def build_form(model, fields):
 # --------------------------------------------------------------------------
 # Generic section pages (driven by registry.SECTIONS)
 # --------------------------------------------------------------------------
-class SectionMixin(StaffRequiredMixin):
+class SectionMixin(AccessMixin):
     paginate_by = 20
+
+    def get_area(self):
+        return self.cfg['area']
 
     def dispatch(self, request, *args, **kwargs):
         self.key = kwargs['section']
@@ -89,8 +102,11 @@ class SectionMixin(StaffRequiredMixin):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        user, area = self.request.user, self.cfg['area']
         ctx.update(section=self.cfg, section_key=self.key, page_title=self.cfg['title'],
-                   can_create=self.cfg.get('can_create', True), singular=self.model._meta.verbose_name)
+                   can_create=self.cfg.get('can_create', True) and can(user, area, 'add'),
+                   can_edit=can(user, area, 'change'), can_delete=can(user, area, 'delete'),
+                   singular=self.model._meta.verbose_name)
         return ctx
 
     def form_valid(self, form):
@@ -101,6 +117,7 @@ class SectionMixin(StaffRequiredMixin):
 
 class SectionListView(SectionMixin, ListView):
     template_name = 'careapp/list.html'
+    write_action = 'view'
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -116,7 +133,7 @@ class SectionListView(SectionMixin, ListView):
         ctx = super().get_context_data(**kwargs)
         meta = self.model._meta
         ctx['headers'] = [
-            'Name' if c == '__str__' else 'Image' if c == 'image_src'
+            'Name' if c in ('__str__', 'avatar') else 'Image' if c == 'image_src'
             else str(meta.get_field(c).verbose_name).capitalize() for c in self.cfg['columns']
         ]
         if self.cfg.get('filter'):
@@ -128,6 +145,7 @@ class SectionListView(SectionMixin, ListView):
 
 class SectionCreateView(SectionMixin, CreateView):
     template_name = 'careapp/form.html'
+    action = write_action = 'add'
 
     def dispatch(self, request, *args, **kwargs):
         if not SECTIONS.get(kwargs['section'], {}).get('can_create', True):
@@ -137,6 +155,13 @@ class SectionCreateView(SectionMixin, CreateView):
 
 class SectionUpdateView(SectionMixin, UpdateView):
     template_name = 'careapp/form.html'
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if not can(self.request.user, self.cfg['area'], 'change'):  # read-only view
+            for field in form.fields.values():
+                field.disabled = True
+        return form
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -150,6 +175,7 @@ class SectionUpdateView(SectionMixin, UpdateView):
 
 class SectionDeleteView(SectionMixin, DeleteView):
     template_name = 'careapp/confirm_delete.html'
+    action = write_action = 'delete'
 
     def get_form_class(self):
         return forms.Form
@@ -160,9 +186,17 @@ class SectionDeleteView(SectionMixin, DeleteView):
         return DeleteView.form_valid(self, form)
 
 
-class SettingsView(StaffRequiredMixin, UpdateView):
+class SettingsView(AccessMixin, UpdateView):
     """Edit one group of fields on a single-row model (site settings, home page)."""
     template_name = 'careapp/form.html'
+    area = 'site'
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        if not can(self.request.user, 'site', 'change'):
+            for field in form.fields.values():
+                field.disabled = True
+        return form
 
     def dispatch(self, request, *args, **kwargs):
         self.key = kwargs['page']
@@ -182,7 +216,8 @@ class SettingsView(StaffRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx.update(section=self.cfg, settings_key=self.key, page_title=self.cfg['title'], is_settings=True)
+        ctx.update(section=self.cfg, settings_key=self.key, page_title=self.cfg['title'], is_settings=True,
+                   can_edit=can(self.request.user, 'site', 'change'))
         return ctx
 
     def form_valid(self, form):
@@ -248,8 +283,21 @@ def dashboard_stats():
     return stats
 
 
-class DashboardView(StaffRequiredMixin, TemplateView):
+class DashboardView(AccessMixin, TemplateView):
     template_name = 'careapp/dashboard.html'
+    area = 'dashboard'
+
+    def dispatch(self, request, *args, **kwargs):
+        # People without the overview go straight to the first area they can use.
+        user = request.user
+        if user.is_authenticated and not can(user, 'dashboard'):
+            for key, cfg in SECTIONS.items():
+                if can(user, cfg['area']):
+                    return redirect('careapp:section_list', key)
+            for area, url in (('onboarding', 'careapp:onboarding'), ('users', 'careapp:users')):
+                if can(user, area):
+                    return redirect(url)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -270,8 +318,9 @@ class DashboardView(StaffRequiredMixin, TemplateView):
 # --------------------------------------------------------------------------
 # Onboarding
 # --------------------------------------------------------------------------
-class OnboardingView(StaffRequiredMixin, TemplateView):
+class OnboardingView(AccessMixin, TemplateView):
     template_name = 'careapp/onboarding.html'
+    area = 'onboarding'
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -280,7 +329,9 @@ class OnboardingView(StaffRequiredMixin, TemplateView):
             tasks = list(p.onboarding_tasks.all())
             p.tasks, p.done_count = tasks, sum(t.done for t in tasks)
             p.percent = round(100 * p.done_count / len(tasks)) if tasks else 0
-        ctx.update(page_title='Onboarding', people=people)
+        ctx.update(page_title='Onboarding', people=people,
+                   can_edit=can(self.request.user, 'onboarding', 'change'),
+                   can_add_staff=can(self.request.user, 'staff', 'add'))
         return ctx
 
     def post(self, request, *args, **kwargs):
@@ -296,3 +347,29 @@ class OnboardingView(StaffRequiredMixin, TemplateView):
             messages.success(request, f'{person} is now an active team member.')
         cache.delete(DASHBOARD_CACHE_KEY)
         return redirect(f"{reverse('careapp:onboarding')}#staff-{request.POST.get('staff', '')}")
+
+
+# --------------------------------------------------------------------------
+# Private files (service user photos): permission-checked, never public
+# --------------------------------------------------------------------------
+PRIVATE_AREAS = {'service-users/': ('service_users', ServiceUser, 'photo')}
+
+
+@login_required(login_url='careapp:login')
+def private_media(request, name):
+    match = next((v for prefix, v in PRIVATE_AREAS.items() if name.startswith(prefix)), None)
+    if not match:
+        raise Http404
+    area, model, field = match
+    if not can(request.user, area):
+        raise PermissionDenied
+    storage = model._meta.get_field(field).storage
+    try:
+        if not storage.exists(name):
+            raise Http404
+        response = FileResponse(storage.open(name, 'rb'))
+    except SuspiciousFileOperation:
+        raise Http404
+    response['Cache-Control'] = 'private, max-age=3600'
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response

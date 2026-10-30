@@ -32,7 +32,7 @@
               <td>{% cell obj col %}</td>
             {% endif %}
           {% endfor %}
-          <td class="actions"><a class="icon-btn" href="{% url 'careapp:section_edit' section_key obj.pk %}" aria-label="Edit {{ obj }}">{% icon "chevron-right" %}</a></td>
+          <td class="actions"><a class="icon-btn" href="{% url 'careapp:section_edit' section_key obj.pk %}" aria-label="{% if can_edit %}Edit{% else %}View{% endif %} {{ obj }}">{% icon "chevron-right" %}</a></td>
         </tr>
         {% endfor %}
       </tbody>

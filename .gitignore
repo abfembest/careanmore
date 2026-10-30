@@ -41,3 +41,5 @@ db.sqlite3
 node_modules/
 staticfiles/
 media/
+# Service user photos and other private uploads
+private_media/

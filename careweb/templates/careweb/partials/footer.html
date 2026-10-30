@@ -56,6 +56,7 @@
           <li><a href="{% url 'careweb:accessibility' %}">Accessibility statement</a></li>
           <li><a href="https://www.nhs.uk/" rel="noopener">NHS website</a></li>
           <li><a href="https://www.cqc.org.uk/" rel="noopener">Care Quality Commission</a></li>
+          <li><a href="{% url 'careapp:login' %}">Staff sign in</a></li>
         </ul>
         {% if site.cqc_url %}
           <p style="margin-top:18px"><a class="cqc-link" href="{{ site.cqc_url }}" rel="noopener">{% icon "shield" %}View our CQC profile</a></p>

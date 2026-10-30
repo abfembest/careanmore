@@ -9,6 +9,7 @@
 <div class="form-layout">
   <form class="card form" method="post" enctype="multipart/form-data" novalidate>
     {% csrf_token %}
+    {% if object and not can_edit %}<div class="toast toast--info" role="status">{% icon "info" %}<span>You can view this, but your role does not allow changes.</span></div>{% endif %}
     {% if form.errors %}<div class="toast toast--error" role="alert">{% icon "alert" %}<span>Check the highlighted fields.</span></div>{% endif %}
     {{ form.non_field_errors }}
     <div class="form-grid">
@@ -26,19 +27,20 @@
       {% endfor %}
     </div>
     <div class="form-actions">
-      <button class="btn" type="submit">Save changes</button>
+      {% if can_edit or not object %}<button class="btn" type="submit">Save changes</button>{% endif %}
       {% if not is_settings %}<a class="btn btn--ghost" href="{% url 'careapp:section_list' section_key %}">Cancel</a>{% endif %}
-      {% if object and not is_settings %}<a class="btn btn--danger" href="{% url 'careapp:section_delete' section_key object.pk %}">Delete</a>{% endif %}
+      {% if object and not is_settings and can_delete %}<a class="btn btn--danger" href="{% url 'careapp:section_delete' section_key object.pk %}">Delete</a>{% endif %}
     </div>
   </form>
 
-  {% if details or object.get_absolute_url or object.image_src %}
+  {% if details or object.get_absolute_url or object.image_src or object.photo_url %}
   <aside class="form-aside">
     {% if details %}
       <div class="card"><h2 class="card__title">Enquiry details</h2>
         <dl class="dl">{% for label, value in details %}<dt>{{ label }}</dt><dd>{{ value|default:"–"|linebreaksbr }}</dd>{% endfor %}</dl>
       </div>
     {% endif %}
+    {% if object.photo_url %}<div class="card"><h2 class="card__title">Photo</h2><img class="preview preview--portrait" src="{{ object.photo_url }}" alt="Photo of {{ object }}"></div>{% endif %}
     {% if object.image_src %}<div class="card"><h2 class="card__title">Current image</h2><img class="preview" src="{{ object.image_src }}" alt=""></div>{% endif %}
     {% if object.get_absolute_url %}<a class="btn btn--ghost btn--block" href="{{ object.get_absolute_url }}" target="_blank" rel="noopener">{% icon "external" %}View on website</a>{% endif %}
   </aside>

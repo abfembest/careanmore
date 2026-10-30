@@ -1,0 +1,36 @@
+{% extends "careapp/base.html" %}
+{% load careweb_tags careapp_tags %}
+{% block content %}
+<nav class="crumbs" aria-label="Breadcrumb"><a href="{% url 'careapp:users' %}">Users</a>{% icon "chevron-right" %}<span aria-current="page">{{ page_title }}</span></nav>
+<div class="form-layout">
+  <form class="card form" method="post" novalidate autocomplete="off">
+    {% csrf_token %}
+    {% if form.errors %}<div class="toast toast--error" role="alert">{% icon "alert" %}<span>Check the highlighted fields.</span></div>{% endif %}
+    <div class="form-grid">
+      {% for field in form %}
+        <div class="field field--{{ field|field_kind }}{% if field.errors %} field--error{% endif %}">
+          {% if field|field_kind == 'checkboxinput' %}
+            <label class="check">{{ field }}<span>{{ field.label }}</span></label>
+          {% else %}
+            <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="req" aria-hidden="true">*</span>{% endif %}</label>
+            {{ field }}
+          {% endif %}
+          {% if field.help_text %}<p class="hint">{{ field.help_text|safe }}</p>{% endif %}
+          {% for e in field.errors %}<p class="error">{{ e }}</p>{% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+    <div class="form-actions">
+      {% if not form.fields.username.disabled %}<button class="btn" type="submit">Save user</button>{% endif %}
+      <a class="btn btn--ghost" href="{% url 'careapp:users' %}">Cancel</a>
+    </div>
+  </form>
+  <aside class="form-aside">
+    <div class="card">
+      <h2 class="card__title">About roles</h2>
+      <p class="muted small" style="margin-top:8px">The role controls which parts of the dashboard this person can view, add to, edit or delete. To stop someone signing in, untick “Account active” rather than deleting them, so their history is kept.</p>
+      <a class="link" href="{% url 'careapp:roles' %}">See what each role can do</a>
+    </div>
+  </aside>
+</div>
+{% endblock %}
