@@ -226,3 +226,4 @@ class PermissionMatrixTests(TestCase):
         r = self.client.get(reverse('careweb:home'))
         self.assertContains(r, reverse('careapp:login'))
         self.assertContains(r, 'Staff sign in')
+        self.assertContains(r, 'href="https://careanmore.co.uk/webmail"')

@@ -47,7 +47,7 @@ SECRET_KEY = env(
     'django-insecure-!#ip8z=ubnj-4l$1c%x$1u$)$c*8bcfss+f^3ojf&^b7r75vx1',
 )
 DEBUG = env_bool('DJANGO_DEBUG', True)
-ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1],ungossiping-violette-nodose.ngrok-free.dev ')
+ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1],careanmore.co.uk, www.careanmore.co.uk, careanmore')
 CSRF_TRUSTED_ORIGINS = env_list('DJANGO_CSRF_TRUSTED_ORIGINS', '')
 
 INSTALLED_APPS = [
