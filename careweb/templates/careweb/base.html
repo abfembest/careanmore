@@ -13,7 +13,7 @@
   <meta property="og:description" content="{% block og_description %}Personalised homecare support shaped around your needs, routines and choices.{% endblock %}">
   <meta property="og:url" content="{{ request.build_absolute_uri }}">
   {% block og_image %}{% endblock %}
-  <link rel="icon" href="{% static 'careweb/img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="icon" href="{{ site.favicon_src }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://images.unsplash.com">

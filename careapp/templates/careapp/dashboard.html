@@ -1,0 +1,100 @@
+{% extends "careapp/base.html" %}
+{% load static careweb_tags careapp_tags %}
+{% block content %}
+<p class="greeting">Good to see you, {{ user.first_name|default:user.get_username }}. Here is how things look on {{ today|date:"l j F" }}.</p>
+
+<section class="kpis" aria-label="Key figures">
+  <a class="kpi" href="{% url 'careapp:section_list' 'service-users' %}?filter=active">
+    <span class="kpi__icon">{% icon "users" %}</span>
+    <span class="kpi__label">Service users receiving care</span>
+    <strong class="kpi__value">{{ kpis.active_users }}</strong>
+    <span class="kpi__note">{{ kpis.pending_users }} awaiting assessment</span>
+  </a>
+  <a class="kpi" href="{% url 'careapp:section_list' 'staff' %}?filter=active">
+    <span class="kpi__icon">{% icon "briefcase" %}</span>
+    <span class="kpi__label">Active staff</span>
+    <strong class="kpi__value">{{ kpis.active_staff }}</strong>
+    <span class="kpi__note">{{ kpis.onboarding }} in onboarding</span>
+  </a>
+  <a class="kpi" href="{% url 'careapp:section_list' 'shifts' %}">
+    <span class="kpi__icon">{% icon "calendar" %}</span>
+    <span class="kpi__label">Shifts today</span>
+    <strong class="kpi__value">{{ kpis.shifts_today }}</strong>
+    <span class="kpi__note">{% if kpis.completion is not None %}{{ kpis.completion }}% of visits completed this month{% else %}No completed visits yet this month{% endif %}</span>
+  </a>
+  <div class="kpi">
+    <span class="kpi__icon">{% icon "clock" %}</span>
+    <span class="kpi__label">Care hours delivered this month</span>
+    <strong class="kpi__value">{{ kpis.hours_month|floatformat:"-1" }}</strong>
+    <span class="kpi__note">From completed shifts</span>
+  </div>
+  <a class="kpi kpi--accent" href="{% url 'careapp:section_list' 'enquiries' %}?filter=new">
+    <span class="kpi__icon">{% icon "mail" %}</span>
+    <span class="kpi__label">New enquiries</span>
+    <strong class="kpi__value">{{ kpis.new_enquiries }}</strong>
+    <span class="kpi__note">Waiting for a reply</span>
+  </a>
+</section>
+
+<section class="charts">
+  <figure class="card chart-card chart-card--wide">
+    <figcaption><h2 class="card__title">Care hours delivered</h2><p class="muted small">Completed shifts, last 8 weeks</p></figcaption>
+    <div class="chart-box"><canvas id="chart-hours" role="img" aria-label="Bar chart of weekly care hours delivered"></canvas></div>
+  </figure>
+  <figure class="card chart-card">
+    <figcaption><h2 class="card__title">Shifts this month</h2><p class="muted small">By status</p></figcaption>
+    <div class="chart-box"><canvas id="chart-shifts" role="img" aria-label="Bar chart of shifts by status this month"></canvas></div>
+  </figure>
+  <figure class="card chart-card">
+    <figcaption><h2 class="card__title">Service users by service</h2><p class="muted small">People receiving care now</p></figcaption>
+    <div class="chart-box"><canvas id="chart-services" role="img" aria-label="Bar chart of service users by main service"></canvas></div>
+  </figure>
+  <figure class="card chart-card">
+    <figcaption><h2 class="card__title">Website enquiries</h2><p class="muted small">Last 6 months</p></figcaption>
+    <div class="chart-box"><canvas id="chart-enquiries" role="img" aria-label="Line chart of website enquiries per month"></canvas></div>
+  </figure>
+</section>
+
+<section class="panels">
+  <div class="card card--flush">
+    <div class="card__head"><h2 class="card__title">Today’s shifts</h2><a class="link" href="{% url 'careapp:section_create' 'shifts' %}">Add shift</a></div>
+    {% if today_shifts %}
+      <ul class="rows">{% for s in today_shifts %}
+        <li><a href="{% url 'careapp:section_edit' 'shifts' s.pk %}">
+          <span class="rows__time">{{ s.start_time|time:"H:i" }}</span>
+          <span class="rows__main"><strong>{{ s.service_user }}</strong><span class="muted">{{ s.staff|default:"Unassigned" }} · {{ s.hours|floatformat:"-2" }} h</span></span>
+          {% cell s "status" %}</a></li>
+      {% endfor %}</ul>
+    {% else %}<p class="empty-sm muted">No shifts scheduled today.</p>{% endif %}
+  </div>
+
+  <div class="card card--flush">
+    <div class="card__head"><h2 class="card__title">Latest enquiries</h2><a class="link" href="{% url 'careapp:section_list' 'enquiries' %}">View all</a></div>
+    {% if latest_enquiries %}
+      <ul class="rows">{% for e in latest_enquiries %}
+        <li><a href="{% url 'careapp:section_edit' 'enquiries' e.pk %}">
+          <span class="rows__main"><strong>{{ e.name }}</strong><span class="muted">{{ e.get_topic_display }} · {{ e.created_at|timesince }} ago</span></span>
+          {% cell e "status" %}</a></li>
+      {% endfor %}</ul>
+    {% else %}<p class="empty-sm muted">No enquiries yet.</p>{% endif %}
+  </div>
+
+  <div class="card card--flush">
+    <div class="card__head"><h2 class="card__title">Onboarding</h2><a class="link" href="{% url 'careapp:onboarding' %}">Open</a></div>
+    {% if onboarding %}
+      <ul class="rows">{% for p in onboarding %}
+        <li><a href="{% url 'careapp:onboarding' %}#staff-{{ p.pk }}">
+          <span class="rows__main"><strong>{{ p }}</strong><span class="muted">{{ p.done }} of {{ p.total }} steps</span></span>
+          <span class="progress" aria-hidden="true"><span style="width:{% widthratio p.done p.total|default:1 100 %}%"></span></span></a></li>
+      {% endfor %}</ul>
+    {% else %}<p class="empty-sm muted">Nobody is onboarding right now.</p>{% endif %}
+  </div>
+</section>
+
+{{ charts|json_script:"chart-data" }}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js" defer></script>
+<script src="{% static 'careapp/charts.js' %}" defer></script>
+{% endblock %}

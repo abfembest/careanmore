@@ -47,7 +47,7 @@ SECRET_KEY = env(
     'django-insecure-!#ip8z=ubnj-4l$1c%x$1u$)$c*8bcfss+f^3ojf&^b7r75vx1',
 )
 DEBUG = env_bool('DJANGO_DEBUG', True)
-ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1]')
+ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1],ungossiping-violette-nodose.ngrok-free.dev ')
 CSRF_TRUSTED_ORIGINS = env_list('DJANGO_CSRF_TRUSTED_ORIGINS', '')
 
 INSTALLED_APPS = [
@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'django.contrib.sitemaps',
     'django.contrib.humanize',
     'careweb.apps.CarewebConfig',
+    'careapp.apps.CareappConfig',
 ]
 
 MIDDLEWARE = [
@@ -94,6 +95,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'careweb.context_processors.site_context',
+                'careapp.context_processors.dashboard_nav',
             ],
         },
     },
@@ -130,7 +132,7 @@ CACHES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 10}},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
@@ -163,6 +165,29 @@ STORAGES = {
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGIN_URL = 'careapp:login'
+
+# --------------------------------------------------------------------------
+# Sign-in and bot protection (see careweb/security.py)
+# --------------------------------------------------------------------------
+AUTHENTICATION_BACKENDS = ['careweb.security.LockoutModelBackend']
+LOGIN_FAILURE_LIMIT = int(env('LOGIN_FAILURE_LIMIT', '5'))        # failed tries per username + IP
+LOGIN_LOCKOUT_MINUTES = int(env('LOGIN_LOCKOUT_MINUTES', '15'))
+ENQUIRY_RATE_LIMIT = (int(env('ENQUIRY_RATE_LIMIT', '5')), 3600)  # enquiries per IP per hour
+FORM_MIN_SECONDS = int(env('FORM_MIN_SECONDS', '3'))             # faster than this = bot
+TURNSTILE_SITE_KEY = env('TURNSTILE_SITE_KEY', '')               # optional Cloudflare Turnstile
+TURNSTILE_SECRET_KEY = env('TURNSTILE_SECRET_KEY', '')
+# Behind a proxy or tunnel (ngrok, Nginx, a PaaS) set this so rate limits see real visitor IPs.
+TRUST_X_FORWARDED_FOR = env_bool('DJANGO_TRUST_X_FORWARDED_FOR', False)
+ADMIN_URL = env('DJANGO_ADMIN_URL', 'admin/')                    # e.g. 'office-7f3k/' hides admin from bots
+
+SESSION_COOKIE_AGE = 8 * 3600          # sign out after 8 hours
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+LOGIN_REDIRECT_URL = 'careapp:dashboard'
+# Uploads (logos, photos) are capped at 5 MB each
+DATA_UPLOAD_MAX_MEMORY_SIZE = FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
 
 # --------------------------------------------------------------------------
 # Email (enquiry notifications). Console backend prints emails in development.

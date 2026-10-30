@@ -16,7 +16,7 @@
 <header class="site-header">
   <div class="wrap">
     <a class="brand" href="{% url 'careweb:home' %}" aria-label="Care Anmore home">
-      <img src="{% static 'careweb/img/logo.svg' %}" alt="Care Anmore" width="220" height="59">
+      <img src="{{ site.logo_src }}" alt="{{ site.organisation_name }}" width="220" height="59">
     </a>
 
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">

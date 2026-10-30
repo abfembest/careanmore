@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.utils import OperationalError, ProgrammingError
 from django.urls import reverse
 
@@ -29,6 +30,7 @@ def site_context(request):
     if current == 'contact_thanks':
         current = 'contact'
     return {
+        'turnstile_site_key': getattr(settings, 'TURNSTILE_SITE_KEY', ''),
         'site': site,
         'main_nav': main_nav,
         'nav_services': nav_services,

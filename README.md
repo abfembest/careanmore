@@ -31,6 +31,63 @@ Open http://127.0.0.1:8000/ for the site and http://127.0.0.1:8000/admin/ to edi
 | `/privacy/`, `/cookies/`, `/accessibility/` | Draft statements to review |
 | `/sitemap.xml`, `/robots.txt` | SEO |
 
+## Team dashboard (`careapp`)
+
+Go to http://127.0.0.1:8000/dashboard/ and sign in with a **staff** account
+(`createsuperuser`, or tick "Staff status" for a user in `/admin/`).
+
+| Menu | What it does |
+| --- | --- |
+| Dashboard | Service users, staff, shifts, care hours and enquiries at a glance, with charts |
+| Care › Service users / Staff / Shifts | Search, filter, add, edit and delete records |
+| Care › Onboarding | Checklist for each new starter (references, DBS, right to work, training…) |
+| Website › Enquiries | Website enquiries with status and staff notes |
+| Website › Site settings | General details, logos & branding, home page text, hero slides, services, FAQs, careers, footer |
+
+Changes made under **Site settings** go live on the website immediately.
+
+Preview the charts with sample data (every record is labelled "Demo"):
+
+```
+python manage.py seed_careapp_demo          # add
+python manage.py seed_careapp_demo --clear  # remove
+```
+
+**Adding a dashboard section:** add one entry to `careapp/registry.py`
+(model, fields, columns, search). List, add, edit and delete pages are generated.
+
+**Uploaded logos and photos** are stored in `media/`. Django serves them only while
+`DEBUG=True`; on a live server, configure your host (e.g. Nginx or your platform's
+media storage) to serve `/media/`.
+
+## Security and bot protection
+
+All of this lives in `careweb/security.py` and needs no extra packages.
+
+**Sign-in (dashboard and Django admin)**
+* After 5 failed attempts for a username from one IP address, sign-in is paused for
+  15 minutes, even with the right password. A single IP is paused after 20 failures
+  across any usernames.
+* Hidden honeypot field and a signed timer: forms sent in under 3 seconds are refused.
+* Passwords need at least 10 characters. Sessions end after 8 hours.
+* Failed and blocked attempts are written to the log (`careweb.security`).
+* Optional: move Django admin to a private address with `DJANGO_ADMIN_URL`.
+
+**Contact form**
+* Honeypot and timer (bots are sent to the thank-you page, but nothing is saved).
+* At most 5 enquiries per IP address per hour.
+* Messages with more than 2 web links are refused.
+
+**Optional CAPTCHA:** set `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` (free
+Cloudflare Turnstile) to add a privacy-friendly "are you human" check to both forms.
+
+**Behind ngrok, Nginx or a hosting platform** set `DJANGO_TRUST_X_FORWARDED_FOR=True`,
+otherwise every visitor looks like the same IP address and limits are shared.
+
+**Running more than one server process?** Limits are kept in Django's cache. The
+default memory cache is per process, so on a multi-process server use a shared
+cache (Redis, or Django's database cache) via `CACHE_BACKEND` / `CACHE_LOCATION`.
+
 ## Editing content (admin)
 
 * **Site settings**: phone, email, address, opening hours, company number, CQC

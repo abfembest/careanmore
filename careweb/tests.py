@@ -1,7 +1,9 @@
 from django.core import mail
+from django.core.cache import cache
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from .security import make_timestamp
 from .models import Enquiry, HeroSlide, Service, SiteSettings, Vacancy
 
 
@@ -43,7 +45,7 @@ class PageTests(TestCase):
     def test_sitemap_and_robots(self):
         self.assertEqual(self.client.get('/sitemap.xml').status_code, 200)
         robots = self.client.get('/robots.txt')
-        self.assertContains(robots, 'Disallow: /admin/')
+        self.assertContains(robots, 'Disallow: /dashboard/')
 
     def test_site_settings_singleton(self):
         s = SiteSettings.load()
@@ -55,11 +57,15 @@ class PageTests(TestCase):
 
 
 class EnquiryTests(TestCase):
+    def setUp(self):
+        cache.clear()
+
     def valid_data(self, **extra):
         data = {
             'name': 'Jane Smith', 'contact_method': 'email', 'email': 'jane@example.com',
             'phone': '', 'postcode': 'PE1 1AA', 'topic': 'homecare', 'service': '',
             'message': 'I would like to know more.', 'consent': 'on', 'website': '',
+            'ts': make_timestamp(offset=-10),
         }
         data.update(extra)
         return data
@@ -87,8 +93,38 @@ class EnquiryTests(TestCase):
         self.assertContains(response, 'Confirm you have read the privacy information')
 
     def test_honeypot_blocks_bots(self):
-        self.client.post(reverse('careweb:contact'), self.valid_data(website='spam'))
+        r = self.client.post(reverse('careweb:contact'), self.valid_data(website='spam'))
+        self.assertRedirects(r, reverse('careweb:contact_thanks'), fetch_redirect_response=False)
         self.assertEqual(Enquiry.objects.count(), 0)
+
+    def test_too_fast_or_missing_timestamp_blocked(self):
+        self.client.post(reverse('careweb:contact'), self.valid_data(ts=make_timestamp()))
+        self.client.post(reverse('careweb:contact'), self.valid_data(ts='forged'))
+        self.assertEqual(Enquiry.objects.count(), 0)
+
+    def test_link_spam_rejected(self):
+        r = self.client.post(reverse('careweb:contact'), self.valid_data(
+            message='http://a.com http://b.com http://c.com'))
+        self.assertContains(r, 'Remove the web links')
+        self.assertEqual(Enquiry.objects.count(), 0)
+
+    @override_settings(ENQUIRY_RATE_LIMIT=(2, 3600))
+    def test_rate_limit_per_ip(self):
+        for _ in range(3):
+            r = self.client.post(reverse('careweb:contact'), self.valid_data())
+        self.assertContains(r, 'Too many enquiries')
+        self.assertEqual(Enquiry.objects.count(), 2)
+
+    @override_settings(TURNSTILE_SECRET_KEY='secret', TURNSTILE_SITE_KEY='site')
+    def test_turnstile_required_when_configured(self):
+        from unittest import mock
+        r = self.client.post(reverse('careweb:contact'), self.valid_data())
+        self.assertContains(r, 'not a robot')
+        fake = mock.MagicMock()
+        fake.__enter__.return_value.read.return_value = b'{"success": true}'
+        with mock.patch('urllib.request.urlopen', return_value=fake):
+            self.client.post(reverse('careweb:contact'), self.valid_data(**{'cf-turnstile-response': 'tok'}))
+        self.assertEqual(Enquiry.objects.count(), 1)
 
     def test_topic_and_service_prefill(self):
         response = self.client.get(reverse('careweb:contact') + '?service=companionship')

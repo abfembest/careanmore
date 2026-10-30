@@ -13,9 +13,10 @@ admin.site.site_title = 'Care Anmore admin'
 admin.site.index_title = 'Website content and enquiries'
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path(settings.ADMIN_URL, admin.site.urls),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('robots.txt', robots_txt, name='robots_txt'),
+    path('dashboard/', include('careapp.urls')),
     path('', include('careweb.urls')),
 ]
 

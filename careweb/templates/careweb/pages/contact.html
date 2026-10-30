@@ -3,6 +3,8 @@
 {% block title %}{% if form.errors %}Error: {% endif %}Contact us | Care Anmore{% endblock %}
 {% block meta_description %}Contact Care Anmore to ask a question or start a conversation about homecare support in {{ site.service_area }}.{% endblock %}
 
+{% block extra_js %}{% if turnstile_site_key %}<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>{% endif %}{% endblock %}
+
 {% block content %}
 {% include "careweb/partials/page_hero.html" with title="Contact us" label="Let’s talk" lead="Ask a question or let us know how you would prefer to be contacted. We will explain the next steps." %}
 
@@ -46,6 +48,8 @@
             <label for="{{ form.website.id_for_label }}">Leave this field empty</label>
             {{ form.website }}
           </div>
+          {{ form.ts }}
+          {% if turnstile_site_key %}<div class="field field--full"><div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}"></div></div>{% endif %}
 
           <div class="field field--full">
             <div><button class="btn" type="submit">Send enquiry</button></div>

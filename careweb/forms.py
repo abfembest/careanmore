@@ -1,18 +1,17 @@
+import re
+
 from django import forms
 
 from .models import Enquiry, Service
+from .security import BotProtectionMixin
 
 
-class EnquiryForm(forms.ModelForm):
+class EnquiryForm(BotProtectionMixin, forms.ModelForm):
     consent = forms.BooleanField(
         required=True,
         label='I have read the privacy information and understand this is an enquiry, not a care booking.',
         error_messages={'required': 'Confirm you have read the privacy information to send your enquiry.'},
     )
-    # Honeypot: real people never see or fill this field.
-    website = forms.CharField(required=False, widget=forms.TextInput(attrs={
-        'tabindex': '-1', 'autocomplete': 'off',
-    }))
 
     class Meta:
         model = Enquiry
@@ -47,10 +46,13 @@ class EnquiryForm(forms.ModelForm):
         for name in ('name', 'contact_method', 'topic'):
             self.fields[name].required = True
 
-    def clean_website(self):
-        if self.cleaned_data.get('website'):
-            raise forms.ValidationError('Leave this field empty.')
-        return ''
+    MAX_LINKS = 2
+
+    def clean_message(self):
+        message = self.cleaned_data.get('message', '')
+        if len(re.findall(r'https?://|www\.', message, re.I)) > self.MAX_LINKS:
+            raise forms.ValidationError('Remove the web links from your message and try again.')
+        return message
 
     def clean(self):
         data = super().clean()

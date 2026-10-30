@@ -1,0 +1,54 @@
+{% extends "careapp/base.html" %}
+{% load careweb_tags careapp_tags %}
+{% block content %}
+<div class="toolbar">
+  <form class="toolbar__search" method="get" role="search">
+    <label class="visually-hidden" for="q">Search {{ section.title|lower }}</label>
+    <input id="q" type="search" name="q" value="{{ q }}" placeholder="Search {{ section.title|lower }}">
+    {% if filter_choices %}
+      <label class="visually-hidden" for="filter">Filter</label>
+      <select id="filter" name="filter" onchange="this.form.submit()">
+        <option value="">All</option>
+        {% for val, label in filter_choices %}<option value="{{ val }}"{% if val == active_filter %} selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    {% endif %}
+    <button class="btn btn--ghost" type="submit">Search</button>
+  </form>
+  {% if can_create %}<a class="btn" href="{% url 'careapp:section_create' section_key %}">{% icon "sparkle" %}Add {{ singular }}</a>{% endif %}
+</div>
+
+<div class="card card--flush">
+  {% if object_list %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr>{% for h in headers %}<th scope="col">{{ h }}</th>{% endfor %}<th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+      <tbody>
+        {% for obj in object_list %}
+        <tr>
+          {% for col in section.columns %}
+            {% if forloop.first %}
+              <td><a class="row-link" href="{% url 'careapp:section_edit' section_key obj.pk %}">{% cell obj col %}</a></td>
+            {% else %}
+              <td>{% cell obj col %}</td>
+            {% endif %}
+          {% endfor %}
+          <td class="actions"><a class="icon-btn" href="{% url 'careapp:section_edit' section_key obj.pk %}" aria-label="Edit {{ obj }}">{% icon "chevron-right" %}</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="empty">{% icon section.icon %}<h2>{% if q or active_filter %}No results{% else %}No {{ section.title|lower }} yet{% endif %}</h2>
+      <p class="muted">{% if q or active_filter %}Try a different search or filter.{% elif can_create %}Add the first one to get started.{% else %}New items will appear here.{% endif %}</p></div>
+  {% endif %}
+</div>
+
+{% if is_paginated %}
+<nav class="pager" aria-label="Pagination">
+  {% if page_obj.has_previous %}<a class="btn btn--ghost btn--sm" href="?page={{ page_obj.previous_page_number }}&q={{ q|urlencode }}&filter={{ active_filter }}">Previous</a>{% endif %}
+  <span class="muted">Page {{ page_obj.number }} of {{ paginator.num_pages }} · {{ paginator.count }} total</span>
+  {% if page_obj.has_next %}<a class="btn btn--ghost btn--sm" href="?page={{ page_obj.next_page_number }}&q={{ q|urlencode }}&filter={{ active_filter }}">Next</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

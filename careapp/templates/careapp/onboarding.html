@@ -1,0 +1,45 @@
+{% extends "careapp/base.html" %}
+{% load careweb_tags %}
+{% block content %}
+<div class="toolbar">
+  <p class="muted">Track each new team member through recruitment checks and induction before they work independently.</p>
+  <a class="btn" href="{% url 'careapp:section_create' 'staff' %}">{% icon "sparkle" %}Add new starter</a>
+</div>
+
+{% if people %}
+<div class="onboard-grid">
+  {% for p in people %}
+  <article class="card onboard" id="staff-{{ p.pk }}">
+    <header class="onboard__head">
+      <span class="avatar avatar--lg" aria-hidden="true">{{ p.first_name|first }}{{ p.last_name|first }}</span>
+      <div>
+        <h2 class="card__title"><a href="{% url 'careapp:section_edit' 'staff' p.pk %}">{{ p }}</a></h2>
+        <p class="muted small">{{ p.get_role_display }} · started {{ p.start_date|date:"j M Y" }}</p>
+      </div>
+      <strong class="onboard__pct">{{ p.percent }}%</strong>
+    </header>
+    <div class="progress progress--lg" role="progressbar" aria-valuenow="{{ p.percent }}" aria-valuemin="0" aria-valuemax="100" aria-label="Onboarding progress"><span style="width:{{ p.percent }}%"></span></div>
+    <ul class="checks">
+      {% for t in p.tasks %}
+      <li>
+        <form method="post">{% csrf_token %}
+          <input type="hidden" name="staff" value="{{ p.pk }}">
+          <button class="check-btn{% if t.done %} is-done{% endif %}" name="task" value="{{ t.pk }}" type="submit" aria-pressed="{{ t.done|yesno:'true,false' }}">
+            <span class="check-btn__box">{% icon "check" %}</span>
+            <span>{{ t.title }}{% if t.done_at %}<small class="muted"> · {{ t.done_at|date:"j M" }}</small>{% endif %}</span>
+          </button>
+        </form>
+      </li>
+      {% endfor %}
+    </ul>
+    {% if p.done_count == p.tasks|length %}
+      <form method="post">{% csrf_token %}<input type="hidden" name="staff" value="{{ p.pk }}">
+        <button class="btn btn--block" name="activate" value="{{ p.pk }}" type="submit">Mark as active team member</button></form>
+    {% endif %}
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card empty">{% icon "clipboard" %}<h2>Nobody is onboarding right now</h2><p class="muted">New staff added with the status “Onboarding” appear here with a checklist.</p></div>
+{% endif %}
+{% endblock %}

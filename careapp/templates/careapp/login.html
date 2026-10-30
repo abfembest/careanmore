@@ -1,0 +1,32 @@
+{% load static %}<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Sign in | {{ site.organisation_name|default:"Care Anmore" }} dashboard</title>
+  <link rel="icon" href="{{ site.favicon_src }}">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'careapp/careapp.css' %}">
+  {% if turnstile_site_key %}<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>{% endif %}
+</head>
+<body class="login">
+  <main class="login__card">
+    <img class="login__logo" src="{{ site.logo_src }}" alt="{{ site.organisation_name }}">
+    <h1>Sign in to the dashboard</h1>
+    <p class="muted">For the {{ site.organisation_name }} team only.</p>
+    {% for e in form.non_field_errors %}<div class="toast toast--error" role="alert">{{ e }}</div>{% endfor %}
+    {% if next and user.is_authenticated %}<div class="toast toast--error" role="alert">Your account does not have access to the dashboard.</div>{% endif %}
+    <form method="post" class="form">
+      {% csrf_token %}
+      <div class="field"><label for="id_username">Username</label>{{ form.username }}</div>
+      <div class="field"><label for="id_password">Password</label>{{ form.password }}</div>
+      <input type="hidden" name="next" value="{{ next }}">
+      {{ form.ts }}
+      <div class="hp" aria-hidden="true"><label for="{{ form.website.id_for_label }}">Leave this field empty</label>{{ form.website }}</div>
+      {% if turnstile_site_key %}<div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="light"></div>{% endif %}
+      <button class="btn btn--block" type="submit">Sign in</button>
+    </form>
+    <p class="muted small"><a href="{% url 'careweb:home' %}">Back to the website</a></p>
+  </main>
+</body>
+</html>

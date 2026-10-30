@@ -4,13 +4,15 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.utils.html import format_html
 
-from .models import FAQ, Enquiry, HeroSlide, Service, SiteSettings, Vacancy
+from .models import FAQ, Enquiry, HeroSlide, HomePage, Service, SiteSettings, Vacancy
 
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Organisation', {'fields': ('organisation_name', 'tagline', 'company_number')}),
+        ('Branding', {'fields': ('logo', 'footer_logo', 'favicon')}),
+        ('Footer', {'fields': ('footer_text', 'footer_disclaimer', 'show_help_strip')}),
         ('Contact details', {'fields': ('phone', 'email', 'address', 'service_area', 'opening_hours')}),
         ('Regulation', {'fields': ('cqc_location_id',)}),
         ('Social links', {'fields': ('facebook_url', 'linkedin_url', 'instagram_url'), 'classes': ('collapse',)}),
@@ -99,3 +101,12 @@ class EnquiryAdmin(admin.ModelAdmin):
                 e.service or '', e.get_status_display(), e.message,
             ])
         return response
+
+
+@admin.register(HomePage)
+class HomePageAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        return not HomePage.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False

@@ -1,0 +1,70 @@
+{% load static careweb_tags %}<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{{ page_title|default:"Dashboard" }} | {{ site.organisation_name|default:"Care Anmore" }} dashboard</title>
+  <link rel="icon" href="{{ site.favicon_src }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'careapp/careapp.css' %}">
+</head>
+<body>
+{% include "careweb/partials/icons.html" %}
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar" aria-label="Dashboard navigation">
+    <a class="sidebar__brand" href="{% url 'careapp:dashboard' %}">
+      <img src="{{ site.logo_src }}" alt="{{ site.organisation_name }}">
+    </a>
+    <nav class="sidenav">
+      <a class="sidenav__link" href="{% url 'careapp:dashboard' %}"{% if nav_current == 'dashboard' %} aria-current="page"{% endif %}>{% icon "sun" %}<span>Dashboard</span></a>
+
+      <p class="sidenav__group">Care</p>
+      {% for key, cfg in nav_care %}
+        <a class="sidenav__link" href="{% url 'careapp:section_list' key %}"{% if nav_current == key %} aria-current="page"{% endif %}>{% icon cfg.icon %}<span>{{ cfg.title }}</span></a>
+      {% endfor %}
+      <a class="sidenav__link" href="{% url 'careapp:onboarding' %}"{% if nav_current == 'onboarding' %} aria-current="page"{% endif %}>{% icon "clipboard" %}<span>Onboarding</span></a>
+
+      <p class="sidenav__group">Website</p>
+      <a class="sidenav__link" href="{% url 'careapp:section_list' 'enquiries' %}"{% if nav_current == 'enquiries' %} aria-current="page"{% endif %}>{% icon "mail" %}<span>Enquiries</span>{% if new_enquiries %}<span class="badge" aria-label="{{ new_enquiries }} new">{{ new_enquiries }}</span>{% endif %}</a>
+      <details class="sidenav__sub"{% if nav_site_open %} open{% endif %}>
+        <summary class="sidenav__link">{% icon "shield" %}<span>Site settings</span>{% icon "chevron-down" "chev" %}</summary>
+        {% for item in nav_site %}
+          <a class="sidenav__link sidenav__link--sub" href="{% url item.url_name item.key %}"{% if nav_current == item.key %} aria-current="page"{% endif %}>{{ item.title }}</a>
+        {% endfor %}
+      </details>
+    </nav>
+    <div class="sidebar__foot">
+      <a class="sidenav__link" href="{% url 'careweb:home' %}" target="_blank" rel="noopener">{% icon "external" %}<span>View website</span></a>
+      {% if user.is_superuser %}<a class="sidenav__link" href="{% url 'admin:index' %}">{% icon "info" %}<span>Django admin</span></a>{% endif %}
+    </div>
+  </aside>
+  <div class="scrim" data-close-nav></div>
+
+  <div class="main-col">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Open navigation">{% icon "menu" %}</button>
+      <h1 class="topbar__title">{{ page_title|default:"Dashboard" }}</h1>
+      <div class="topbar__user">
+        <span class="avatar" aria-hidden="true">{{ user.get_username|first|upper }}</span>
+        <span class="topbar__name">{{ user.get_full_name|default:user.get_username }}</span>
+        <form method="post" action="{% url 'careapp:logout' %}">{% csrf_token %}<button class="btn btn--ghost btn--sm" type="submit">Sign out</button></form>
+      </div>
+    </header>
+
+    <main id="main" tabindex="-1">
+      {% for message in messages %}
+        <div class="toast toast--{{ message.tags|default:'info' }}" role="status">{% icon "check" %}<span>{{ message }}</span></div>
+      {% endfor %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+<script src="{% static 'careapp/careapp.js' %}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -12,6 +12,7 @@ from django.urls import reverse
 from django.utils.text import slugify
 
 IMAGE_VALIDATOR = FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp', 'avif'])
+LOGO_VALIDATOR = FileExtensionValidator(['svg', 'png', 'jpg', 'jpeg', 'webp', 'ico'])
 
 ICON_CHOICES = [
     ('heart', 'Heart'),
@@ -72,7 +73,34 @@ class ImageMixin(models.Model):
         return static(self.FALLBACK_IMAGE)
 
 
-class SiteSettings(TimeStampedModel):
+class SingletonModel(TimeStampedModel):
+    """A table with exactly one row (pk=1), cached for fast reads."""
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def cache_key(cls):
+        return f'careweb:singleton:{cls._meta.model_name}'
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+        cache.delete(self.cache_key())
+
+    def delete(self, *args, **kwargs):  # the single row is never deleted
+        return None
+
+    @classmethod
+    def load(cls):
+        obj = cache.get(cls.cache_key())
+        if obj is None:
+            obj, _ = cls.objects.get_or_create(pk=1)
+            cache.set(cls.cache_key(), obj, 60 * 15)
+        return obj
+
+
+class SiteSettings(SingletonModel):
     """Single row holding organisation-wide details shown across the site."""
 
     organisation_name = models.CharField(max_length=120, default='Care Anmore Ltd')
@@ -95,7 +123,25 @@ class SiteSettings(TimeStampedModel):
     linkedin_url = models.URLField(blank=True)
     instagram_url = models.URLField(blank=True)
 
-    CACHE_KEY = 'careweb:site-settings'
+    # Branding
+    logo = models.FileField(upload_to='branding/', blank=True, validators=[LOGO_VALIDATOR],
+                            help_text='Header logo (SVG or PNG, about 440×120).')
+    footer_logo = models.FileField(upload_to='branding/', blank=True, validators=[LOGO_VALIDATOR],
+                                   help_text='Optional. Uses the header logo if empty.')
+    favicon = models.FileField(upload_to='branding/', blank=True, validators=[LOGO_VALIDATOR],
+                               help_text='Browser tab icon (square SVG or PNG).')
+
+    # Footer
+    footer_text = models.CharField(max_length=240, default='Personalised homecare support shaped around the person.')
+    footer_disclaimer = models.TextField(
+        blank=True,
+        default=('Website preview content. Final service descriptions, contact details, privacy information '
+                 'and any regulatory statements must be verified and approved before publication. Do not treat '
+                 'this preview as confirmation of registration or service availability.'),
+        help_text='Shown at the bottom of every page while the preview banner is on.',
+    )
+    show_help_strip = models.BooleanField('show urgent help strip', default=True,
+                                          help_text='The 999 / NHS 111 notice above the footer.')
 
     class Meta:
         verbose_name = 'site settings'
@@ -104,21 +150,21 @@ class SiteSettings(TimeStampedModel):
     def __str__(self):
         return 'Site settings'
 
-    def save(self, *args, **kwargs):
-        self.pk = 1
-        super().save(*args, **kwargs)
-        cache.delete(self.CACHE_KEY)
+    def _file_or_static(self, field, fallback):
+        f = getattr(self, field)
+        return f.url if f else static(fallback)
 
-    def delete(self, *args, **kwargs):  # the single row is never deleted
-        return None
+    @property
+    def logo_src(self):
+        return self._file_or_static('logo', 'careweb/img/logo.svg')
 
-    @classmethod
-    def load(cls):
-        obj = cache.get(cls.CACHE_KEY)
-        if obj is None:
-            obj, _ = cls.objects.get_or_create(pk=1)
-            cache.set(cls.CACHE_KEY, obj, 60 * 15)
-        return obj
+    @property
+    def footer_logo_src(self):
+        return self.footer_logo.url if self.footer_logo else self.logo_src
+
+    @property
+    def favicon_src(self):
+        return self._file_or_static('favicon', 'careweb/img/favicon.svg')
 
     @property
     def phone_href(self):
@@ -129,6 +175,55 @@ class SiteSettings(TimeStampedModel):
         if self.cqc_location_id:
             return f'https://www.cqc.org.uk/location/{self.cqc_location_id}'
         return ''
+
+
+class HomePage(ImageMixin, SingletonModel):
+    """Editable text for the home page sections (the hero uses HeroSlide)."""
+
+    FALLBACK_IMAGE = 'careweb/img/fallback.svg'
+
+    trust_1 = models.CharField(max_length=80, default='Care shaped around the individual')
+    trust_2 = models.CharField(max_length=80, default='Respect for dignity and choice')
+    trust_3 = models.CharField(max_length=80, default='Clear communication with you')
+    services_title = models.CharField(max_length=120, default='Support for everyday life')
+    services_intro = models.TextField(default=(
+        'We will discuss your circumstances and preferences to understand what support may be appropriate. '
+        'The final care arrangement depends on an individual assessment and confirmed service scope.'))
+    approach_label = models.CharField(max_length=40, default='Our approach')
+    approach_title = models.CharField(max_length=120, default='You’re a person first. Always.')
+    approach_lead = models.CharField(max_length=200, default='Good care is built on listening, trust and respect.')
+    approach_body = models.TextField(default=(
+        'We want people to have a voice in how support is provided. That means taking time to understand '
+        'preferences, explaining choices clearly and agreeing support together wherever possible.\n\n'
+        'Our aim is to encourage independence, not to take over tasks unnecessarily, and to communicate '
+        'clearly when needs or circumstances change.'), help_text='Separate paragraphs with a blank line.')
+    approach_badge_title = models.CharField(max_length=60, default='Support with dignity.')
+    approach_badge_text = models.CharField(max_length=120, default='Respect, choice and wellbeing guide every visit.')
+    steps_title = models.CharField(max_length=120, default='A clear, thoughtful first step')
+    steps_intro = models.TextField(default=(
+        'We begin with a conversation. No two people are the same, so any proposed support must be '
+        'discussed and assessed before arrangements are agreed.'))
+    area_text = models.CharField(max_length=240, default=(
+        'Coverage is confirmed individually. Add your postcode to your enquiry and we will let you know '
+        'whether we can help.'))
+    faq_title = models.CharField(max_length=120, default='Questions people often ask')
+    faq_intro = models.CharField(max_length=240, default=(
+        'If you cannot find what you are looking for, get in touch and we will be happy to help.'))
+    cta_title = models.CharField(max_length=120, default='Let’s start with a conversation')
+    cta_text = models.CharField(max_length=300, default=(
+        'Tell us what you are looking for and how you would like to be contacted. We will explain the next '
+        'steps in clear language.'))
+
+    class Meta:
+        verbose_name = 'home page'
+        verbose_name_plural = 'home page'
+
+    def __str__(self):
+        return 'Home page'
+
+    @property
+    def approach_paragraphs(self):
+        return [p.strip() for p in self.approach_body.split('\n\n') if p.strip()]
 
 
 class HeroSlide(ImageMixin, TimeStampedModel):

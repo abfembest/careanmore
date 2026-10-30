@@ -10,7 +10,8 @@ from django.views.decorators.http import require_GET
 from django.views.generic import DetailView, FormView, ListView, TemplateView
 
 from .forms import EnquiryForm
-from .models import FAQ, HeroSlide, Service, SiteSettings, Vacancy
+from .security import rate_limited
+from .models import FAQ, HeroSlide, HomePage, Service, SiteSettings, Vacancy
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,7 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        ctx['home'] = HomePage.load()
         ctx['slides'] = HeroSlide.objects.published()
         ctx['services'] = Service.objects.published().filter(is_featured=True)[:6]
         ctx['faqs'] = FAQ.objects.published().filter(show_on_home=True)[:4]
@@ -108,6 +110,19 @@ class ContactView(FormView):
                 initial.setdefault('topic', 'homecare')
         return initial
 
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), 'request': self.request}
+
+    def post(self, request, *args, **kwargs):
+        limit, window = settings.ENQUIRY_RATE_LIMIT
+        if rate_limited(request, 'enquiry', limit, window):
+            form = self.get_form()
+            form.is_valid()  # keep what the person typed
+            form.add_error(None, 'Too many enquiries have been sent from your connection. '
+                                 'Please try again later or contact us by phone.')
+            return self.form_invalid(form)
+        return super().post(request, *args, **kwargs)
+
     def form_valid(self, form):
         enquiry = form.save(commit=False)
         enquiry.source_page = (self.request.META.get('HTTP_REFERER') or '')[:200]
@@ -117,6 +132,8 @@ class ContactView(FormView):
         return redirect('careweb:contact_thanks')
 
     def form_invalid(self, form):
+        if getattr(form, 'is_bot', False):  # don't tell bots why they failed
+            return redirect('careweb:contact_thanks')
         messages.error(self.request, 'There is a problem with your enquiry. Check the highlighted fields.')
         return super().form_invalid(form)
 
@@ -177,7 +194,7 @@ class LegalView(TemplateView):
 def robots_txt(request):
     lines = [
         'User-agent: *',
-        'Disallow: /admin/',
+        'Disallow: /dashboard/',
         f'Sitemap: {request.build_absolute_uri("/sitemap.xml")}',
     ]
     return HttpResponse('\n'.join(lines) + '\n', content_type='text/plain')
